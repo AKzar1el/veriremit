@@ -17,6 +17,10 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: '22.16.0'
+      - name: Install PDF verification dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends poppler-utils
       - name: Install pinned workspace dependencies
         run: npm install --ignore-scripts --no-audit --no-fund
       - name: Verify unit, integration, types, build, and secrets
