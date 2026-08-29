@@ -24,9 +24,9 @@
     "check:secrets": "node scripts/check-secrets.mjs",
     "verify:offline": "npm run generate:fixtures && npm test && npm run typecheck:core && npm run typecheck:providers && npm run check:secrets",
     "verify": "npm run generate:fixtures && npm test && npm run typecheck && npm run build && npm run check:secrets",
-    "smoke:nutrient": "node --experimental-strip-types scripts/smoke-nutrient.ts",
-    "smoke:foxit:mcp": "node --experimental-strip-types scripts/smoke-foxit-mcp.ts",
-    "smoke:foxit:esign": "node --experimental-strip-types scripts/smoke-foxit-esign.ts"
+    "smoke:nutrient": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/smoke-nutrient.ts",
+    "smoke:foxit:mcp": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/smoke-foxit-mcp.ts",
+    "smoke:foxit:esign": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/smoke-foxit-esign.ts"
   },
   "devDependencies": {
     "@playwright/test": "1.62.1",
