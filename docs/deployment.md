@@ -73,4 +73,15 @@ Then run the synthetic demo flow in fixture mode before configuring live secrets
 
 ## Current execution status
 
-The deployment configuration is repository-tested for pathing, secret hygiene, and runtime composition. This sandbox does not provide Docker and cannot currently reach npm to install external packages, so the container itself has not been built here. No deployment success claim should be made until a networked runtime builds the image and the health/MCP checks complete.
+A clean Ubuntu GitHub Actions run now verifies the deployment package end to end without sponsor secrets:
+
+- installs the committed dependency graph with `npm ci`;
+- reports 0 high-or-greater production dependency vulnerabilities;
+- passes 113/113 unit/integration/contract tests, all TypeScript checks, the Vite production build, and the repository secret scan;
+- passes both Chromium fixture-mode Playwright tests with retries disabled;
+- builds `Dockerfile.agent` with production dependencies from the committed lockfile;
+- starts the built container in fixture mode and receives HTTP 200 from `/health`.
+
+This proves clean-clone reproducibility, browser integration, container packaging, process startup, and fixture-mode health. It does **not** prove a hosted live deployment or any Nutrient/Foxit sponsor call.
+
+A public hosted agent is not required by the current sponsor submission criteria, so it is lower priority than live provider verification and the final recording. If the agent is hosted for convenience, keep it private/authenticated; CORS alone is not an access-control boundary.
