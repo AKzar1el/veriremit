@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22.16.0'
+      - name: Install pinned workspace dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Verify unit, integration, types, build, and secrets
+        run: npm run verify
+      - name: Install Chromium for fixture-mode E2E
+        run: npx playwright install --with-deps chromium
+      - name: Run fixture-mode browser E2E
+        run: npm run test:e2e
+        env:
+          VERIREMIT_PROVIDER_MODE: fixture
+      - name: Build agent container without sponsor secrets
+        run: docker build -f Dockerfile.agent -t veriremit-agent:ci .
+
+# Live Nutrient/Foxit provider smokes are intentionally manual. PR CI never receives sponsor credentials.
