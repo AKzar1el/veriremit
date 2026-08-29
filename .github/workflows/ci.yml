@@ -38,6 +38,16 @@ jobs:
         if: failure()
         run: |
           find test-results -name error-context.md -print -exec cat {} \; || true
+      - name: Upload Playwright failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failure
+          path: |
+            test-results
+            playwright-report
+          if-no-files-found: warn
+          retention-days: 1
       - name: Build agent container without sponsor secrets
         run: docker build -f Dockerfile.agent -t veriremit-agent:ci .
 
