@@ -50,5 +50,17 @@ jobs:
           retention-days: 1
       - name: Build agent container without sponsor secrets
         run: docker build -f Dockerfile.agent -t veriremit-agent:ci .
+      - name: Smoke built agent container health
+        run: |
+          docker run -d --rm --name veriremit-agent-ci -p 8787:8787 veriremit-agent:ci
+          trap 'docker logs veriremit-agent-ci || true; docker stop veriremit-agent-ci >/dev/null 2>&1 || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8787/health >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo 'Agent container did not become healthy.' >&2
+          exit 1
 
 # Live Nutrient/Foxit provider smokes are intentionally manual. PR CI never receives sponsor credentials.
