@@ -125,9 +125,11 @@ Submission copy, judging coverage, and the exact 2-4 minute recording flow live 
 
 ## Current status
 
-The deterministic workflow, fixture demo, Nutrient/Foxit provider adapters, live provider composition, UI, CI safeguards, and deployment packaging are implemented. The current offline verification baseline is **111 tests passing** plus strict core/provider typechecks, adversarial concurrency/failure-path coverage, and a clean secret scan. Live provider calls and hosted deployment remain evidence-gated until sponsor credentials and a networked build/runtime are available.
+The deterministic workflow, fixture demo, Nutrient/Foxit provider adapters, live-provider composition, UI, CI safeguards, and deployment packaging are implemented. The current clean-run baseline is **113/113 tests passing**, 0 high-or-greater production dependency vulnerabilities, strict core/provider/app typechecks, a production Vite build, a clean repository secret scan, **2/2 Chromium end-to-end tests passing with retries disabled**, a successful `Dockerfile.agent` build, and a fixture-mode container startup that returns HTTP 200 from `/health`.
 
-VeriRemit is intentionally **hackathon-production-shaped, not represented as regulated-production-ready**. The current live runtime is designed for one controlled long-lived instance. Dependency resolution is locked and CI uses `npm ci`; a real multi-user production deployment still needs upstream authentication/rate limiting, transactional durable storage with cross-instance idempotency, and an externally anchored or signed audit store.
+Live Nutrient/Foxit calls and the required real human Foxit signature remain evidence-gated until sponsor credentials are configured in a runnable live environment. A public hosted agent is optional for the current sponsor submission criteria and is not represented as verified.
+
+VeriRemit is intentionally **hackathon-production-shaped, not represented as regulated-production-ready**. The current live runtime is designed for one controlled long-lived instance. Dependency resolution is locked and CI/Docker use `npm ci`; a real multi-user production deployment still needs upstream authentication/rate limiting, transactional durable storage with cross-instance idempotency, and an externally anchored or signed audit store.
 
 ## License
 
