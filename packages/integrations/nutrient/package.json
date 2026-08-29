@@ -1,0 +1,10 @@
+{
+  "name": "@veriremit/nutrient",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@veriremit/domain": "0.0.0"
+  }
+}

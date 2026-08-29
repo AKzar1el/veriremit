@@ -1,0 +1,63 @@
+{
+  "mode": "fixture",
+  "notice": "Synthetic deterministic extraction fixture for tests and UI development only. Do not present as a live Nutrient response.",
+  "documents": [
+    {
+      "id": "doc_vendor_master",
+      "kind": "vendor_master",
+      "filename": "vendor-master.pdf",
+      "facts": [
+        { "field": "vendor_id", "value": "V-1042", "normalizedValue": "V-1042", "confidence": 0.99, "source": { "documentId": "doc_vendor_master", "filename": "vendor-master.pdf", "page": 1, "boundingBox": [72, 160, 230, 180] } },
+        { "field": "vat_id", "value": "DE123456789", "normalizedValue": "DE123456789", "confidence": 0.99, "source": { "documentId": "doc_vendor_master", "filename": "vendor-master.pdf", "page": 1, "boundingBox": [72, 190, 260, 210] } },
+        { "field": "beneficiary_name", "value": "ACME Components GmbH", "normalizedValue": "ACME COMPONENTS GMBH", "confidence": 0.99, "source": { "documentId": "doc_vendor_master", "filename": "vendor-master.pdf", "page": 1, "boundingBox": [72, 220, 320, 240] } },
+        { "field": "iban", "value": "DE89 3704 0044 0532", "normalizedValue": "DE89370400440532", "confidence": 0.99, "source": { "documentId": "doc_vendor_master", "filename": "vendor-master.pdf", "page": 1, "boundingBox": [72, 250, 330, 270] } },
+        { "field": "trusted_phone", "value": "+49 30 555 0104", "normalizedValue": "+49305550104", "confidence": 0.99, "source": { "documentId": "doc_vendor_master", "filename": "vendor-master.pdf", "page": 1, "boundingBox": [72, 280, 280, 300] } }
+      ]
+    },
+    {
+      "id": "doc_po_4821",
+      "kind": "purchase_order",
+      "filename": "purchase-order-4821.pdf",
+      "facts": [
+        { "field": "po_number", "value": "PO-4821", "normalizedValue": "PO-4821", "confidence": 0.99, "source": { "documentId": "doc_po_4821", "filename": "purchase-order-4821.pdf", "page": 1, "boundingBox": [72, 150, 210, 170] } },
+        { "field": "vendor_id", "value": "V-1042", "normalizedValue": "V-1042", "confidence": 0.99, "source": { "documentId": "doc_po_4821", "filename": "purchase-order-4821.pdf", "page": 1, "boundingBox": [72, 180, 210, 200] } },
+        { "field": "currency", "value": "EUR", "normalizedValue": "EUR", "confidence": 0.99, "source": { "documentId": "doc_po_4821", "filename": "purchase-order-4821.pdf", "page": 1, "boundingBox": [72, 210, 150, 230] } },
+        { "field": "amount", "value": "48620.00", "normalizedValue": "48620.00", "confidence": 0.99, "source": { "documentId": "doc_po_4821", "filename": "purchase-order-4821.pdf", "page": 1, "boundingBox": [72, 240, 190, 260] } }
+      ]
+    },
+    {
+      "id": "doc_previous_invoice",
+      "kind": "previous_invoice",
+      "filename": "previous-invoice.pdf",
+      "facts": [
+        { "field": "vendor_id", "value": "V-1042", "normalizedValue": "V-1042", "confidence": 0.99, "source": { "documentId": "doc_previous_invoice", "filename": "previous-invoice.pdf", "page": 1, "boundingBox": [72, 160, 210, 180] } },
+        { "field": "vat_id", "value": "DE123456789", "normalizedValue": "DE123456789", "confidence": 0.99, "source": { "documentId": "doc_previous_invoice", "filename": "previous-invoice.pdf", "page": 1, "boundingBox": [72, 190, 250, 210] } },
+        { "field": "beneficiary_name", "value": "ACME Components GmbH", "normalizedValue": "ACME COMPONENTS GMBH", "confidence": 0.99, "source": { "documentId": "doc_previous_invoice", "filename": "previous-invoice.pdf", "page": 1, "boundingBox": [72, 220, 320, 240] } },
+        { "field": "iban", "value": "DE89 3704 0044 0532", "normalizedValue": "DE89370400440532", "confidence": 0.99, "source": { "documentId": "doc_previous_invoice", "filename": "previous-invoice.pdf", "page": 1, "boundingBox": [72, 250, 330, 270] } }
+      ]
+    },
+    {
+      "id": "doc_current_invoice",
+      "kind": "current_invoice",
+      "filename": "invoice-8842.pdf",
+      "facts": [
+        { "field": "vendor_id", "value": "V-1042", "normalizedValue": "V-1042", "confidence": 0.99, "source": { "documentId": "doc_current_invoice", "filename": "invoice-8842.pdf", "page": 1, "boundingBox": [72, 150, 210, 170] } },
+        { "field": "vat_id", "value": "DE123456789", "normalizedValue": "DE123456789", "confidence": 0.99, "source": { "documentId": "doc_current_invoice", "filename": "invoice-8842.pdf", "page": 1, "boundingBox": [72, 180, 250, 200] } },
+        { "field": "po_number", "value": "PO-4821", "normalizedValue": "PO-4821", "confidence": 0.99, "source": { "documentId": "doc_current_invoice", "filename": "invoice-8842.pdf", "page": 1, "boundingBox": [72, 210, 210, 230] } },
+        { "field": "currency", "value": "EUR", "normalizedValue": "EUR", "confidence": 0.99, "source": { "documentId": "doc_current_invoice", "filename": "invoice-8842.pdf", "page": 1, "boundingBox": [72, 240, 150, 260] } },
+        { "field": "amount", "value": "48620.00", "normalizedValue": "48620.00", "confidence": 0.99, "source": { "documentId": "doc_current_invoice", "filename": "invoice-8842.pdf", "page": 1, "boundingBox": [72, 270, 190, 290] } },
+        { "field": "beneficiary_name", "value": "ACME Components GmbH", "normalizedValue": "ACME COMPONENTS GMBH", "confidence": 0.99, "source": { "documentId": "doc_current_invoice", "filename": "invoice-8842.pdf", "page": 1, "boundingBox": [72, 300, 320, 320] } },
+        { "field": "iban", "value": "DE72 5001 0517 5407", "normalizedValue": "DE72500105175407", "confidence": 0.99, "source": { "documentId": "doc_current_invoice", "filename": "invoice-8842.pdf", "page": 1, "boundingBox": [72, 330, 330, 350] } }
+      ]
+    },
+    {
+      "id": "doc_bank_change",
+      "kind": "bank_change_letter",
+      "filename": "bank-change-letter.pdf",
+      "facts": [
+        { "field": "vendor_id", "value": "V-1042", "normalizedValue": "V-1042", "confidence": 0.98, "source": { "documentId": "doc_bank_change", "filename": "bank-change-letter.pdf", "page": 1, "boundingBox": [72, 170, 210, 190] } },
+        { "field": "iban", "value": "DE72 5001 0517 5407", "normalizedValue": "DE72500105175407", "confidence": 0.98, "source": { "documentId": "doc_bank_change", "filename": "bank-change-letter.pdf", "page": 1, "boundingBox": [72, 230, 330, 250] } }
+      ]
+    }
+  ]
+}

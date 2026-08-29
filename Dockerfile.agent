@@ -1,0 +1,31 @@
+FROM node:22.16.0-bookworm-slim
+
+WORKDIR /app
+ENV NODE_ENV=production \
+    HOST=0.0.0.0 \
+    PORT=8787 \
+    VERIREMIT_PROVIDER_MODE=fixture \
+    VERIREMIT_DATA_DIR=/var/lib/veriremit
+
+COPY package.json ./
+COPY apps/agent/package.json apps/agent/package.json
+COPY packages/domain/package.json packages/domain/package.json
+COPY packages/audit/package.json packages/audit/package.json
+COPY packages/policy/package.json packages/policy/package.json
+COPY packages/integrations/nutrient/package.json packages/integrations/nutrient/package.json
+COPY packages/integrations/foxit-mcp/package.json packages/integrations/foxit-mcp/package.json
+COPY packages/integrations/foxit-esign/package.json packages/integrations/foxit-esign/package.json
+
+RUN npm install --omit=dev --ignore-scripts --no-audit --no-fund
+
+COPY apps/agent apps/agent
+COPY packages packages
+COPY fixtures fixtures
+
+RUN mkdir -p /var/lib/veriremit && chown -R node:node /var/lib/veriremit /app
+USER node
+
+EXPOSE 8787
+VOLUME ["/var/lib/veriremit"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD node -e "fetch('http://127.0.0.1:8787/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+CMD ["npm", "run", "start", "--workspace", "@veriremit/agent"]

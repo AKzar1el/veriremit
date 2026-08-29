@@ -1,0 +1,71 @@
+%PDF-1.4
+% VeriRemit deterministic synthetic fixture
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+6 0 obj
+<< /Length 2027 >>
+stream
+0.97 0.98 0.99 rg 0 0 595 842 re f
+0.06 0.09 0.16 rg 0 766 595 76 re f
+1 1 1 rg BT /F2 10 Tf 42 808 Td (VERIREMIT) Tj ET
+1 1 1 rg BT /F2 17 Tf 42 785 Td (HISTORICAL PAID INVOICE) Tj ET
+1.00 0.95 0.75 rg 390 790 163 25 re f
+0.35 0.24 0.02 rg BT /F2 9 Tf 405 798 Td (DEMO - FICTIONAL DATA) Tj ET
+0.10 0.13 0.20 rg BT /F2 25 Tf 42 715 Td (ACME Components GmbH) Tj ET
+0.38 0.42 0.50 rg BT /F1 10 Tf 42 691 Td (Prior verified invoice retained as payment-history evidence) Tj ET
+0.84 0.86 0.90 rg 42 661 511 1 re f
+1 1 1 rg 42 614 511 48 re f
+0.87 0.89 0.92 RG 1 w 42 614 511 48 re S
+0.40 0.44 0.51 rg BT /F2 8 Tf 57 641 Td (VENDOR ID) Tj ET
+0.10 0.13 0.20 rg BT /F1 11 Tf 203 638 Td (V-1042) Tj ET
+1 1 1 rg 42 556 511 48 re f
+0.87 0.89 0.92 RG 1 w 42 556 511 48 re S
+0.40 0.44 0.51 rg BT /F2 8 Tf 57 583 Td (VAT ID) Tj ET
+0.10 0.13 0.20 rg BT /F1 11 Tf 203 580 Td (DE123456789) Tj ET
+1 1 1 rg 42 498 511 48 re f
+0.87 0.89 0.92 RG 1 w 42 498 511 48 re S
+0.40 0.44 0.51 rg BT /F2 8 Tf 57 525 Td (BENEFICIARY) Tj ET
+0.10 0.13 0.20 rg BT /F1 11 Tf 203 522 Td (ACME Components GmbH) Tj ET
+0.93 0.98 0.95 rg 42 440 511 48 re f
+0.16 0.55 0.35 RG 1 w 42 440 511 48 re S
+0.40 0.44 0.51 rg BT /F2 8 Tf 57 467 Td (HISTORICAL IBAN) Tj ET
+0.10 0.13 0.20 rg BT /F2 13 Tf 203 464 Td (DE89 3704 0044 0532) Tj ET
+1 1 1 rg 42 382 511 48 re f
+0.87 0.89 0.92 RG 1 w 42 382 511 48 re S
+0.40 0.44 0.51 rg BT /F2 8 Tf 57 409 Td (HISTORICAL STATUS) Tj ET
+0.10 0.13 0.20 rg BT /F1 11 Tf 203 406 Td (Paid - verified account on file) Tj ET
+0.96 0.97 0.98 rg 42 112 511 78 re f
+0.82 0.85 0.89 RG 1 w 42 112 511 78 re S
+0.40 0.44 0.51 rg BT /F2 8 Tf 57 164 Td (CONTROL NOTE) Tj ET
+0.24 0.28 0.35 rg BT /F1 9 Tf 57 143 Td (The historical account matches the verified vendor master.) Tj ET
+0.45 0.49 0.56 rg BT /F1 7.5 Tf 42 54 Td (Synthetic hackathon fixture. No person, account, payment instruction, or business record in this document is real.) Tj ET
+0.45 0.49 0.56 rg BT /F1 7.5 Tf 42 39 Td (Generated deterministically by scripts/generate-fixtures.ts.) Tj ET
+endstream
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000053 00000 n 
+0000000102 00000 n 
+0000000159 00000 n 
+0000000295 00000 n 
+0000000365 00000 n 
+0000000440 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+2519
+%%EOF

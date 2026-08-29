@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  },
+  "include": [
+    "packages/domain/src/**/*.ts",
+    "packages/policy/src/**/*.ts",
+    "packages/audit/src/**/*.ts"
+  ]
+}

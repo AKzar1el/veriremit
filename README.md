@@ -2,7 +2,7 @@
 
 VeriRemit is a source-grounded vendor payment-change verification workflow built from scratch for the DevNetwork API + Cloud + AI Hackathon 2026.
 
-It detects suspicious vendor bank-account changes from business documents, shows the evidence behind each conflicting fact, blocks consequential actions with deterministic policy, and requires verified human approval before a signature workflow can proceed.
+It detects suspicious vendor payment-detail changes from business documents, shows the evidence behind each conflicting fact, blocks consequential actions with deterministic policy, and requires verified human approval before a signature workflow can proceed.
 
 ## Hackathon targets
 
@@ -21,7 +21,7 @@ The model does not decide whether a bank-account mismatch exists and cannot sign
 flowchart LR
   U["Plain-language prompt"] --> A["Bounded agent<br/>read · extract · prepare · request signature"]
   A --> N["Nutrient DWS<br/>grounded extraction"]
-  N --> P["Deterministic policy<br/>8 verification rules"]
+  N --> P["Deterministic policy<br/>10 verification rules"]
   P -- "exception" --> H["Human verification<br/>trusted vendor-master contact"]
   P -- "clear" --> G["Server-side release gate"]
   H --> G
@@ -125,7 +125,9 @@ Submission copy, judging coverage, and the exact 2-4 minute recording flow live 
 
 ## Current status
 
-The deterministic workflow, fixture demo, Nutrient/Foxit provider adapters, live provider composition, UI, CI safeguards, and deployment packaging are implemented. The current offline verification baseline is **82 tests passing** plus strict core/provider typechecks and a clean secret scan. Live provider calls and hosted deployment remain evidence-gated until sponsor credentials and a networked build/runtime are available.
+The deterministic workflow, fixture demo, Nutrient/Foxit provider adapters, live provider composition, UI, CI safeguards, and deployment packaging are implemented. The current offline verification baseline is **109 tests passing** plus strict core/provider typechecks, adversarial concurrency/failure-path coverage, and a clean secret scan. Live provider calls and hosted deployment remain evidence-gated until sponsor credentials and a networked build/runtime are available.
+
+VeriRemit is intentionally **hackathon-production-shaped, not represented as regulated-production-ready**. The current live runtime is designed for one controlled long-lived instance. A real multi-user production deployment still needs upstream authentication/rate limiting, transactional durable storage with cross-instance idempotency, an externally anchored or signed audit store, and a committed npm lockfile with `npm ci`/dependency-audit enforcement.
 
 ## License
 

@@ -1,0 +1,36 @@
+{
+  "name": "veriremit",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "packages/integrations/*"
+  ],
+  "scripts": {
+    "generate:fixtures": "node --experimental-strip-types scripts/generate-fixtures.ts",
+    "demo:reset": "node --experimental-strip-types scripts/demo-reset.ts && npm run generate:fixtures",
+    "test": "node scripts/run-tests.mjs",
+    "test:e2e": "playwright test",
+    "typecheck:core": "tsc -p tsconfig.core.json --noEmit",
+    "typecheck:providers": "tsc -p packages/integrations/nutrient/tsconfig.json --noEmit && tsc -p packages/integrations/foxit-mcp/tsconfig.json --noEmit && tsc -p packages/integrations/foxit-esign/tsconfig.json --noEmit",
+    "typecheck:app": "tsc -p apps/agent/tsconfig.json --noEmit && tsc -p apps/web/tsconfig.json --noEmit",
+    "typecheck": "npm run typecheck:core && npm run typecheck:providers && npm run typecheck:app",
+    "build": "npm run build --workspace @veriremit/web",
+    "check:secrets": "node scripts/check-secrets.mjs",
+    "verify:offline": "npm run generate:fixtures && npm test && npm run typecheck:core && npm run typecheck:providers && npm run check:secrets",
+    "verify": "npm run generate:fixtures && npm test && npm run typecheck && npm run build && npm run check:secrets",
+    "smoke:nutrient": "node --experimental-strip-types scripts/smoke-nutrient.ts",
+    "smoke:foxit:mcp": "node --experimental-strip-types scripts/smoke-foxit-mcp.ts",
+    "smoke:foxit:esign": "node --experimental-strip-types scripts/smoke-foxit-esign.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1",
+    "typescript": "5.8.3"
+  },
+  "license": "MIT"
+}
