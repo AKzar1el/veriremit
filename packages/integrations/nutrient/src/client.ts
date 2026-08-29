@@ -118,19 +118,9 @@ export class NutrientExtractionClient implements DocumentExtractor {
     bytes: Uint8Array;
     kind: DocumentKind;
   }): Promise<ExtractedDocument> {
-    const instructions = {
-      mode: 'understand',
-      schema: SCHEMAS[input.kind],
-      citationsEnabled: true,
-    } as const;
-
     const form = new FormData();
     form.append('file', new Blob([input.bytes], { type: 'application/pdf' }), input.filename);
-    form.append(
-      'instructions',
-      new Blob([JSON.stringify(instructions)], { type: 'application/json' }),
-      'instructions.json',
-    );
+    form.append('schema', JSON.stringify(SCHEMAS[input.kind]));
 
     let response: Response;
     try {
