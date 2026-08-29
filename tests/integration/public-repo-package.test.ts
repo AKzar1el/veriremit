@@ -31,3 +31,14 @@ test('clean clone declares the TypeScript compiler used by verification scripts'
   };
   assert.equal(packageJson.devDependencies?.typescript, '5.8.3');
 });
+
+test('clean clone has a committed lockfile and deterministic install paths', async () => {
+  await assert.doesNotReject(access('package-lock.json'), 'package-lock.json must be committed');
+  const ci = await readFile('.github/workflows/ci.yml', 'utf8');
+  const dockerfile = await readFile('Dockerfile.agent', 'utf8');
+  assert.match(ci, /npm ci --ignore-scripts --no-audit --no-fund/);
+  assert.doesNotMatch(ci, /npm install --ignore-scripts/);
+  assert.match(dockerfile, /COPY package-lock\.json \.\//);
+  assert.match(dockerfile, /npm ci --omit=dev --ignore-scripts --no-audit --no-fund/);
+  assert.doesNotMatch(dockerfile, /npm install --omit=dev/);
+});

@@ -64,7 +64,7 @@ Prerequisites:
 Install the workspace dependencies and create a local environment file:
 
 ```bash
-npm install --ignore-scripts --no-audit --no-fund
+npm ci --ignore-scripts --no-audit --no-fund
 cp .env.example .env.local
 npm run generate:fixtures
 ```
@@ -125,9 +125,9 @@ Submission copy, judging coverage, and the exact 2-4 minute recording flow live 
 
 ## Current status
 
-The deterministic workflow, fixture demo, Nutrient/Foxit provider adapters, live provider composition, UI, CI safeguards, and deployment packaging are implemented. The current offline verification baseline is **109 tests passing** plus strict core/provider typechecks, adversarial concurrency/failure-path coverage, and a clean secret scan. Live provider calls and hosted deployment remain evidence-gated until sponsor credentials and a networked build/runtime are available.
+The deterministic workflow, fixture demo, Nutrient/Foxit provider adapters, live provider composition, UI, CI safeguards, and deployment packaging are implemented. The current offline verification baseline is **111 tests passing** plus strict core/provider typechecks, adversarial concurrency/failure-path coverage, and a clean secret scan. Live provider calls and hosted deployment remain evidence-gated until sponsor credentials and a networked build/runtime are available.
 
-VeriRemit is intentionally **hackathon-production-shaped, not represented as regulated-production-ready**. The current live runtime is designed for one controlled long-lived instance. A real multi-user production deployment still needs upstream authentication/rate limiting, transactional durable storage with cross-instance idempotency, an externally anchored or signed audit store, and a committed npm lockfile with `npm ci`/dependency-audit enforcement.
+VeriRemit is intentionally **hackathon-production-shaped, not represented as regulated-production-ready**. The current live runtime is designed for one controlled long-lived instance. Dependency resolution is locked and CI uses `npm ci`; a real multi-user production deployment still needs upstream authentication/rate limiting, transactional durable storage with cross-instance idempotency, and an externally anchored or signed audit store.
 
 ## License
 

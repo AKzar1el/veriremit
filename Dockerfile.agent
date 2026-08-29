@@ -8,6 +8,7 @@ ENV NODE_ENV=production \
     VERIREMIT_DATA_DIR=/var/lib/veriremit
 
 COPY package.json ./
+COPY package-lock.json ./
 COPY apps/agent/package.json apps/agent/package.json
 COPY packages/domain/package.json packages/domain/package.json
 COPY packages/audit/package.json packages/audit/package.json
@@ -16,7 +17,7 @@ COPY packages/integrations/nutrient/package.json packages/integrations/nutrient/
 COPY packages/integrations/foxit-mcp/package.json packages/integrations/foxit-mcp/package.json
 COPY packages/integrations/foxit-esign/package.json packages/integrations/foxit-esign/package.json
 
-RUN npm install --omit=dev --ignore-scripts --no-audit --no-fund
+RUN npm ci --omit=dev --ignore-scripts --no-audit --no-fund
 
 COPY apps/agent apps/agent
 COPY packages packages

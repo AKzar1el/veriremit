@@ -17,18 +17,15 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: '22.16.0'
+          cache: npm
       - name: Install PDF verification dependency
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends poppler-utils
-      - name: Install pinned workspace dependencies
-        run: npm install --ignore-scripts --no-audit --no-fund
-      - name: Preserve generated dependency lock for reproducibility hardening
-        uses: actions/upload-artifact@v4
-        with:
-          name: package-lock
-          path: package-lock.json
-          if-no-files-found: error
+      - name: Install locked workspace dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Audit production dependency vulnerabilities
+        run: npm audit --omit=dev --audit-level=high
       - name: Verify unit, integration, types, build, and secrets
         run: npm run verify
       - name: Install Chromium for fixture-mode E2E
