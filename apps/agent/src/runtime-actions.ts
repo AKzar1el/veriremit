@@ -1,4 +1,5 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { join, resolve } from 'node:path';
 import { appendEvent, verifyLedger } from '@veriremit/audit';
 import type { HumanVerification, VerificationCase } from '@veriremit/domain';
@@ -20,6 +21,7 @@ interface FixtureFile {
 }
 
 const PDF_HEADER = '%PDF-1.4\n';
+const DEFAULT_FIXTURE_DIR = fileURLToPath(new URL('../../../fixtures/acme-components/', import.meta.url));
 
 function escapePdfText(value: string): string {
   return value.replaceAll('\\', '\\\\').replaceAll('(', '\\(').replaceAll(')', '\\)');
@@ -59,7 +61,7 @@ function fixtureReleasePdf(): Uint8Array {
 
 export async function createFixtureRuntimeActions(options: FixtureRuntimeOptions) {
   const now = options.now ?? (() => new Date().toISOString());
-  const fixtureDir = resolve(options.fixtureDir ?? 'fixtures/acme-components');
+  const fixtureDir = options.fixtureDir ? resolve(options.fixtureDir) : DEFAULT_FIXTURE_DIR;
   const dataDir = resolve(options.dataDir);
   const cases = new FilesystemCaseRepository(join(dataDir, 'cases'));
   const audits = new FilesystemAuditRepository(join(dataDir, 'audit'));
