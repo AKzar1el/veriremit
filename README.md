@@ -2,7 +2,7 @@
 
 VeriRemit is a source-grounded vendor payment-change verification workflow built from scratch for the DevNetwork API + Cloud + AI Hackathon 2026.
 
-It detects suspicious vendor payment-detail changes from business documents, shows the evidence behind each conflicting fact, blocks consequential actions with deterministic policy, and requires verified human approval before a signature workflow can proceed.
+It detects suspicious vendor bank-account changes from business documents, shows the evidence behind each conflicting fact, blocks consequential actions with deterministic policy, and requires verified human approval before a signature workflow can proceed.
 
 ## Hackathon targets
 

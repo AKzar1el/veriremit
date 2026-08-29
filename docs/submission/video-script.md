@@ -25,7 +25,7 @@ Target length: **2:45-2:55**. Screen recording plus narration; no face camera re
 
 **Narration**
 
-"Nutrient extracts the documents into grounded facts with confidence and source locations. The model does not decide whether this is safe. VeriRemit's deterministic rules do. The vendor, VAT number, PO, amount, currency and beneficiary match, but the payment IBAN changed, so release is hard-blocked."
+"Nutrient extracts the documents into grounded facts with confidence and source locations. The model does not decide whether this is safe. VeriRemit's deterministic rules do. The vendor, VAT number, PO, amount, currency and beneficiary match. The bank-change letter also matches this vendor and the new invoice IBAN, but that IBAN differs from both verified historical sources, so release is hard-blocked."
 
 ## 0:42-1:05 - Source evidence through Nutrient DWS Viewer
 

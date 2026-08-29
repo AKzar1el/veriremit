@@ -10,6 +10,10 @@ VeriRemit deliberately separates the browser UI from the live agent runtime.
 
 Fixture mode can be used for public UI previews, but fixture behavior must never be presented as live Nutrient/Foxit evidence.
 
+### Access-control requirement
+
+`VERIREMIT_WEB_ORIGIN` configures CORS only; **it is not authentication**. For a live sponsor demo, keep the agent private/local or place it behind an authenticated access proxy/reverse proxy and expose only the intended reviewer UI. Do not publish the live agent API directly to the internet. The current filesystem repository is also single-instance only; do not run multiple agent replicas against the same data directory.
+
 ## Agent container
 
 Build from the repository root:
@@ -69,4 +73,4 @@ Then run the synthetic demo flow in fixture mode before configuring live secrets
 
 ## Current execution status
 
-The repository CI verifies the application and builds `Dockerfile.agent` without sponsor secrets. A hosted deployment is still not considered verified until the deployed `/health` endpoint succeeds and the credential-gated provider checks complete in that runtime.
+The deployment configuration is repository-tested for pathing, secret hygiene, and runtime composition. This sandbox does not provide Docker and cannot currently reach npm to install external packages, so the container itself has not been built here. No deployment success claim should be made until a networked runtime builds the image and the health/MCP checks complete.

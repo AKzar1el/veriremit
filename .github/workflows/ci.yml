@@ -23,6 +23,12 @@ jobs:
           sudo apt-get install -y --no-install-recommends poppler-utils
       - name: Install pinned workspace dependencies
         run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Preserve generated dependency lock for reproducibility hardening
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-lock
+          path: package-lock.json
+          if-no-files-found: error
       - name: Verify unit, integration, types, build, and secrets
         run: npm run verify
       - name: Install Chromium for fixture-mode E2E

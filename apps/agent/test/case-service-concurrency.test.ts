@@ -222,3 +222,4 @@ test('concurrent signature status refreshes record completion once', async () =>
   assert.equal(results.filter((result) => result.status === 'rejected').length, 1);
   assert.equal(ledger.filter((event: any) => event.type === 'SIGNATURE_COMPLETED').length, 1);
 });
+
