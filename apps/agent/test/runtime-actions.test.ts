@@ -73,3 +73,28 @@ test('fixture runtime drives the complete browser-facing verification flow witho
     await rm(dir, { recursive: true, force: true });
   }
 });
+
+test('fixture demo bootstrap is idempotent under concurrent first-load requests', async () => {
+  const module = await loadRuntime();
+  assert.equal(typeof module.createFixtureRuntimeActions, 'function');
+  const dir = await mkdtemp(join(tmpdir(), 'veriremit-runtime-concurrent-'));
+
+  try {
+    const actions = await (module.createFixtureRuntimeActions as (options: unknown) => Promise<any>)({
+      dataDir: dir,
+      fixtureDir: 'fixtures/acme-components',
+      now: () => '2026-08-29T02:00:00.000Z',
+    });
+
+    const created = await Promise.all(
+      Array.from({ length: 8 }, () => actions.createDemoCase() as Promise<VerificationCase>),
+    );
+
+    assert.equal(new Set(created.map((value) => value.id)).size, 1);
+    assert.ok(created.every((value) => value.status === 'created'));
+    const stored = await actions.getCase(created[0].id) as VerificationCase;
+    assert.equal(stored.status, 'created');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
