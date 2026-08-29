@@ -37,6 +37,10 @@ jobs:
         run: npm run test:e2e
         env:
           VERIREMIT_PROVIDER_MODE: fixture
+      - name: Print Playwright failure context
+        if: failure()
+        run: |
+          find test-results -name error-context.md -print -exec cat {} \; || true
       - name: Build agent container without sponsor secrets
         run: docker build -f Dockerfile.agent -t veriremit-agent:ci .
 
