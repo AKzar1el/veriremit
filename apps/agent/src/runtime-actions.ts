@@ -100,10 +100,27 @@ export async function createFixtureRuntimeActions(options: FixtureRuntimeOptions
     signatureGateway,
     now,
   });
+  let demoCaseBootstrap: Promise<VerificationCase> | undefined;
 
   async function requireCase(caseId: string): Promise<VerificationCase> {
     const value = await cases.get(caseId);
     if (!value) throw new CaseServiceError('CASE_NOT_FOUND', 'Verification case was not found.', 404);
+    return value;
+  }
+
+  async function bootstrapDemoCase(): Promise<VerificationCase> {
+    const existing = await cases.get(DEMO_CASE_ID);
+    if (existing) return existing;
+
+    const value = createDemoCase(now());
+    await cases.create(value);
+    const event = appendEvent([], {
+      caseId: value.id,
+      type: 'CASE_CREATED',
+      occurredAt: now(),
+      data: { mode: 'fixture' },
+    });
+    await audits.save(value.id, [event]);
     return value;
   }
 
@@ -119,16 +136,15 @@ export async function createFixtureRuntimeActions(options: FixtureRuntimeOptions
     async createDemoCase(): Promise<VerificationCase> {
       const existing = await cases.get(DEMO_CASE_ID);
       if (existing) return existing;
-      const value = createDemoCase(now());
-      await cases.create(value);
-      const event = appendEvent([], {
-        caseId: value.id,
-        type: 'CASE_CREATED',
-        occurredAt: now(),
-        data: { mode: 'fixture' },
-      });
-      await audits.save(value.id, [event]);
-      return value;
+
+      if (!demoCaseBootstrap) {
+        const pending = bootstrapDemoCase();
+        demoCaseBootstrap = pending;
+        void pending.finally(() => {
+          if (demoCaseBootstrap === pending) demoCaseBootstrap = undefined;
+        }).catch(() => undefined);
+      }
+      return demoCaseBootstrap;
     },
 
     async getCase(caseId: string): Promise<VerificationCase> {
