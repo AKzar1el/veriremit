@@ -42,3 +42,23 @@ test('clean clone has a committed lockfile and deterministic install paths', asy
   assert.match(dockerfile, /npm ci --omit=dev --ignore-scripts --no-audit --no-fund/);
   assert.doesNotMatch(dockerfile, /npm install --omit=dev/);
 });
+
+test('live smoke scripts load gitignored .env.local and document every required local-only input', async () => {
+  const packageJson = JSON.parse(await readFile('package.json', 'utf8')) as {
+    scripts?: Record<string, string>;
+  };
+  for (const scriptName of ['smoke:nutrient', 'smoke:foxit:mcp', 'smoke:foxit:esign']) {
+    assert.match(
+      packageJson.scripts?.[scriptName] ?? '',
+      /node --env-file-if-exists=\.env\.local --experimental-strip-types/,
+      `${scriptName} must load .env.local without requiring shell-specific export commands`,
+    );
+  }
+
+  const envExample = await readFile('.env.example', 'utf8');
+  assert.match(envExample, /^FOXIT_ESIGN_SMOKE_PDF=$/m);
+
+  const gitignore = await readFile('.gitignore', 'utf8');
+  assert.match(gitignore, /^\.env\.\*$/m);
+  assert.match(gitignore, /^!\.env\.example$/m);
+});
