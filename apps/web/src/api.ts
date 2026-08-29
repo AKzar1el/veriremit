@@ -25,12 +25,13 @@ export class ApiError extends Error {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const viteEnv = (import.meta as ImportMeta & { env?: { VITE_API_BASE_URL?: string } }).env;
+  const headers = new Headers(init?.headers);
+  if (init?.body != null && !headers.has('content-type')) {
+    headers.set('content-type', 'application/json');
+  }
   const response = await fetch(resolveApiUrl(path, viteEnv?.VITE_API_BASE_URL), {
     ...init,
-    headers: {
-      'content-type': 'application/json',
-      ...(init?.headers ?? {}),
-    },
+    headers,
   });
   if (!response.ok) {
     let payload: ApiErrorPayload = {};
