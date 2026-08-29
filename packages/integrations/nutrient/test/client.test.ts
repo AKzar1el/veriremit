@@ -5,7 +5,7 @@ async function loadClient() {
   return import('../src/client.ts').catch(() => ({} as Record<string, unknown>));
 }
 
-test('posts a grounded schema extraction request without leaking the API key into the result', async () => {
+test('posts the current schema extraction request without leaking the API key into the result', async () => {
   const module = await loadClient();
   assert.equal(typeof module.NutrientExtractionClient, 'function');
 
@@ -45,13 +45,15 @@ test('posts a grounded schema extraction request without leaking the API key int
   assert.equal(calls[0]?.url, 'https://api.nutrient.io/extraction/extract');
   assert.equal(new Headers(calls[0]?.init?.headers).get('authorization'), 'Bearer secret-nutrient-key');
   assert.ok(calls[0]?.init?.body instanceof FormData);
-  const instructionsPart = (calls[0]?.init?.body as FormData).get('instructions');
-  assert.ok(instructionsPart instanceof Blob);
-  assert.equal(instructionsPart.type, 'application/json');
-  const instructions = JSON.parse(await instructionsPart.text());
-  assert.equal(instructions.mode, 'understand');
-  assert.equal(instructions.citationsEnabled, true);
-  assert.equal(instructions.schema.type, 'object');
+  const form = calls[0]?.init?.body as FormData;
+  assert.ok(form.get('file') instanceof Blob);
+  const schemaPart = form.get('schema');
+  assert.equal(typeof schemaPart, 'string');
+  const schema = JSON.parse(schemaPart as string);
+  assert.equal(schema.type, 'object');
+  assert.equal(schema.additionalProperties, false);
+  assert.equal(schema.properties.iban.type, 'string');
+  assert.equal(form.get('instructions'), null);
   assert.equal(JSON.stringify(result).includes('secret-nutrient-key'), false);
 });
 
