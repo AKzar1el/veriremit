@@ -60,7 +60,7 @@ npm run smoke:foxit:esign
 Required environment inputs in addition to Foxit credentials:
 
 - `VERIREMIT_SIGNER_EMAIL` - the human who will actually sign the developer-test envelope;
-- `VERIREMIT_ESIGN_SMOKE_PDF` - an explicit local synthetic PDF path.
+- `FOXIT_ESIGN_SMOKE_PDF` - an explicit local synthetic PDF path.
 
 Success evidence to record after execution:
 
