@@ -9,6 +9,13 @@ async function loadAgentModules() {
   return { reviewer, tools };
 }
 
+const toolDependencies = {
+  getCase: async () => ({ id: 'case_acme_po_4821', status: 'review_required' }),
+  extractCase: async () => ({ id: 'case_acme_po_4821', status: 'review_required' }),
+  prepareRelease: async () => ({ id: 'case_acme_po_4821', status: 'release_prepared' }),
+  requestHumanSignature: async () => ({ id: 'case_acme_po_4821', status: 'signature_pending' }),
+};
+
 test('reviewer tool boundary exposes only case inspection, extraction, gated release preparation, and human-signature request', async () => {
   const { tools } = await loadAgentModules();
   assert.equal(typeof tools.createReviewerToolDefinitions, 'function');
@@ -94,7 +101,7 @@ test('request_human_signature delegates to the authoritative envelope gate but n
   assert.equal(JSON.stringify(result).includes('https://sign.example/secret'), false);
 });
 
-test('reviewer agent configuration is pinned to the cheapest bounded model profile', async () => {
+test('reviewer agent configuration keeps the bounded OpenAI fallback profile', async () => {
   const { reviewer } = await loadAgentModules();
   assert.equal(typeof reviewer.createReviewerAgentConfig, 'function');
 
@@ -116,7 +123,57 @@ test('reviewer agent configuration is pinned to the cheapest bounded model profi
   assert.match(config.instructions, /cannot sign/i);
 });
 
-test('reviewer runs are hard-capped to three turns to bound cost and loops', async () => {
+test('reviewer prefers Groq GPT-OSS through the OpenAI-compatible provider when GROQ_API_KEY is present', async () => {
+  const { reviewer } = await loadAgentModules();
+  assert.equal(typeof reviewer.createReviewerAgent, 'function');
+
+  let providerOptions: Record<string, unknown> | undefined;
+  let requestedModel: string | undefined;
+  let agentConfig: Record<string, any> | undefined;
+
+  class FakeProvider {
+    constructor(options: Record<string, unknown>) {
+      providerOptions = options;
+    }
+    getModel(model: string) {
+      requestedModel = model;
+      return { provider: 'groq', model };
+    }
+  }
+
+  class FakeAgent {
+    constructor(config: Record<string, unknown>) {
+      agentConfig = config;
+    }
+  }
+
+  await (reviewer.createReviewerAgent as (input: unknown) => Promise<unknown>)({
+    ...toolDependencies,
+    env: { GROQ_API_KEY: 'gsk_test_only' },
+    sdk: {
+      Agent: FakeAgent,
+      OpenAIProvider: FakeProvider,
+      tool: (definition: unknown) => definition,
+    },
+  });
+
+  assert.deepEqual(providerOptions, {
+    apiKey: 'gsk_test_only',
+    baseURL: 'https://api.groq.com/openai/v1',
+    useResponses: false,
+    strictFeatureValidation: true,
+  });
+  assert.equal(requestedModel, 'openai/gpt-oss-120b');
+  assert.deepEqual(agentConfig?.model, { provider: 'groq', model: 'openai/gpt-oss-120b' });
+  assert.equal(agentConfig?.modelSettings.maxTokens, 256);
+  assert.equal(agentConfig?.modelSettings.parallelToolCalls, false);
+  assert.equal(agentConfig?.modelSettings.toolChoice, 'auto');
+  assert.equal('reasoning' in (agentConfig?.modelSettings ?? {}), false);
+  assert.equal('text' in (agentConfig?.modelSettings ?? {}), false);
+  assert.equal('store' in (agentConfig?.modelSettings ?? {}), false);
+});
+
+test('reviewer runs are hard-capped to three turns and disable OpenAI trace export', async () => {
   const { reviewer } = await loadAgentModules();
   assert.equal(typeof reviewer.runReviewerAgent, 'function');
 
@@ -130,6 +187,6 @@ test('reviewer runs are hard-capped to three turns to bound cost and loops', asy
     },
   });
 
-  assert.deepEqual(captured, { maxTurns: 3 });
+  assert.deepEqual(captured, { maxTurns: 3, tracingDisabled: true });
   assert.equal(result, 'Blocked pending callback.');
 });
