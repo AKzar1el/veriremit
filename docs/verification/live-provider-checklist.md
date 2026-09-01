@@ -28,6 +28,14 @@ The production reviewer uses the OpenAI Agents SDK with a Groq-backed `OpenAIPro
 - `prepare_release`;
 - `request_human_signature`.
 
+Run only with the Groq credential supplied through the environment:
+
+```bash
+npm run smoke:groq
+```
+
+The smoke asks the real Groq-backed reviewer to use exactly one `get_case_summary` tool call against the synthetic demo case. The other three tools fail closed if the model attempts to invoke them, and model output/credentials are not printed.
+
 Success evidence for the final live run:
 
 - a plain-language prompt reaches the real Groq model;
