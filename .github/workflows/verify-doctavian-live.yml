@@ -1,6 +1,10 @@
 name: Verify Doctavian live smoke
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/verify-doctavian-live.yml'
   workflow_dispatch:
 
 permissions:
