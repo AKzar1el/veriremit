@@ -14,14 +14,19 @@ test('secret scanner detects high-risk token families without returning the cred
   const fakeGithub = ['github', 'pat', '11FAKEabcdefghijklmnopqrstuv123456789'].join('_');
   const fakeCloudflare = ['cfut', 'FAKEabcdefghijklmnopqrstuv123456789'].join('_');
   const fakeGroq = ['gsk', 'FAKEabcdefghijklmnopqrstuvwxyz0123456789'].join('_');
+  const fakeDoctavianKey = ['DOCTAVIAN_API_KEY', '1234567890abcdef1234567890abcdef'].join('=');
+  const fakeDoctavianToken = [
+    'DOCTAVIAN_ACCESS_TOKEN',
+    ['eyJ', 'hbGciOiJSUzI1NiJ9.fake.payload'].join(''),
+  ].join('=');
   const text = [
     'one',
     fakeOpenAi,
     fakeGithub,
     fakeCloudflare,
     fakeGroq,
-    'DOCTAVIAN_API_KEY=1234567890abcdef1234567890abcdef',
-    'DOCTAVIAN_ACCESS_TOKEN=eyJhbGciOiJSUzI1NiJ9.fake.payload',
+    fakeDoctavianKey,
+    fakeDoctavianToken,
     '',
   ].join('\n');
   const findings = scan(text);
@@ -38,6 +43,8 @@ test('secret scanner detects high-risk token families without returning the cred
   assert.equal(findings.some((finding) => 'value' in finding), false);
   assert.equal(JSON.stringify(findings).includes(fakeOpenAi), false);
   assert.equal(JSON.stringify(findings).includes(fakeGroq), false);
+  assert.equal(JSON.stringify(findings).includes(fakeDoctavianKey), false);
+  assert.equal(JSON.stringify(findings).includes(fakeDoctavianToken), false);
 });
 
 test('secret scanner ignores environment variable placeholders', async () => {
