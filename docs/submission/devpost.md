@@ -14,7 +14,7 @@ VeriRemit catches suspicious vendor bank-detail changes from source documents, b
 
 A vendor invoice can look completely legitimate while changing only one field that matters: the bank account. VeriRemit reviews a synthetic supplier packet, extracts comparable facts with source provenance, detects a changed IBAN deterministically, and refuses to prepare a payment-release document until a human independently verifies the change using the pre-existing vendor-master contact.
 
-After approval, Doctavian turns the approved structured case into a Payment Release Authorization. Foxit's MCP server performs only reversible PDF assembly, then Foxit eSign creates a real human-signature envelope through the direct API. VeriRemit never moves money and the agent never signs.
+After approval, the intended live chain uses Doctavian to turn the approved structured case into a Payment Release Authorization. Foxit's MCP server performs only reversible PDF assembly, then Foxit eSign creates a real human-signature envelope through the direct API. VeriRemit never moves money and the agent never signs.
 
 ## Inspiration
 
@@ -31,11 +31,11 @@ The engineering problem is not simply “can an LLM read an invoice?” It is de
 5. A changed bank account creates a hard block even when the rest of the packet matches.
 6. The reviewer can inspect the source evidence through a short-lived Nutrient DWS Viewer session.
 7. The bank change can be resolved only by recording an independent callback using the trusted contact stored in the vendor master; contact details from the suspicious change notice are rejected.
-8. Only after the server-side release gate passes does VeriRemit send the approved structured case data to Doctavian. A deterministic DOCX template uses merge fields, a repeater over verification controls, and a calculated control count to generate the Payment Release Authorization PDF.
-9. Foxit's official MCP server uploads that Doctavian-generated PDF plus the source evidence, merges the packet, and downloads the final release document. The MCP allow-list contains only reversible document operations.
+8. Only after the server-side release gate passes may VeriRemit send the approved structured case data to Doctavian. A deterministic DOCX template uses merge fields, a repeater over verification controls, and a calculated control count to generate the Payment Release Authorization PDF.
+9. Foxit's official MCP server uploads that generated authorization PDF plus the source evidence, merges the packet, and downloads the final release document. The VeriRemit agent boundary statically allows only reversible document operations.
 10. After the packet exists, the agent can request a Foxit eSign envelope through the direct eSign API. The agent cannot perform the signature.
 11. A human signs in Foxit. VeriRemit accepts completion only after Foxit's authoritative envelope status reports completion.
-12. Important state transitions—including Doctavian generation, Foxit MCP completion, envelope creation, and final signature—are written to a SHA-256 hash-chained audit ledger. VeriRemit never executes a payment.
+12. Important state transitions—including structured generation, Foxit MCP completion, envelope creation, and final signature—are written to a SHA-256 hash-chained audit ledger. VeriRemit never executes a payment.
 
 ## Where Nutrient DWS does the heavy lifting
 
@@ -43,11 +43,15 @@ Nutrient DWS is VeriRemit's evidence layer: Data Extraction turns the source PDF
 
 ## Where Doctavian does the heavy lifting
 
-Doctavian is VeriRemit's approved-document generation layer. After deterministic controls and the trusted human callback clear the release gate, VeriRemit uploads a structured JSON representation of the approved case and a deterministic DOCX template. The template contains merge fields for the case/payment facts, a repeater over verification-control results, and a calculated control count. Doctavian generates the canonical Payment Release Authorization PDF that is then handed to Foxit for assembly.
+Doctavian is VeriRemit's approved-document generation layer. After deterministic controls and the trusted human callback clear the release gate, VeriRemit uploads a structured JSON representation of the approved case and a deterministic DOCX template. The template contains merge fields for the case/payment facts, a repeater over verification-control results, and a calculated control count. Doctavian is intended to generate the canonical Payment Release Authorization PDF that is then handed to Foxit for assembly.
+
+The adapter/template/composition are complete, but the real hackathon account still requires a Microsoft OAuth bearer token in addition to its provisioned API key. Until that OAuth flow is completed and the live generation smoke passes, VeriRemit does not represent Doctavian as live-verified.
 
 ## Where Foxit does the heavy lifting
 
-Foxit's official MCP server performs the reversible final-packet work: upload the Doctavian-generated authorization, upload the supporting evidence, merge them, and download the final PDF. Foxit eSign is deliberately separate and called directly to create the human-signature envelope. The agent may prepare and request a signature, but only a person can sign, and the server independently verifies the final provider status.
+Foxit's official MCP server performs the reversible final-packet work: upload the generated authorization, upload the supporting evidence, merge them, and download the final PDF. Foxit eSign is deliberately separate and called directly to create the human-signature envelope. The agent may prepare and request a signature, but only a person can sign, and the server independently verifies the final provider status.
+
+The live Foxit proof is complete: a real MCP operation succeeded, a real developer-test eSign envelope was created and signed by a human, and a fresh authoritative Foxit lookup reported `EXECUTED` while activity history independently confirmed the signer action.
 
 ## How I built it
 
@@ -72,26 +76,38 @@ The agent can inspect a case, start extraction, request release preparation, and
 
 ## Challenges
 
-The hardest boundary was making the agent useful without making it authoritative. A bank-account mismatch is therefore decided by normal code, not model judgment. The same principle applies to every consequential edge: Doctavian generation cannot run before the deterministic/human gate, Foxit MCP handles reversible document operations, direct eSign creates the human handoff, and only authoritative Foxit status can move the case to `release_authorized`.
+The hardest boundary was making the agent useful without making it authoritative. A bank-account mismatch is therefore decided by normal code, not model judgment. The same principle applies to every consequential edge: structured generation cannot run before the deterministic/human gate, Foxit MCP handles reversible document operations, direct eSign creates the human handoff, and only authoritative Foxit status can move the case to `release_authorized`.
 
-A second challenge was preserving evidence provenance across provider boundaries. Nutrient-specific extraction metadata is normalized while retaining confidence, page, bounding-box, and source-document references needed by the reviewer. The approved normalized state is then rendered into structured Doctavian data and an auditable generated authorization rather than asking a model to free-write the legal/financial document.
+A second challenge was preserving evidence provenance across provider boundaries. Nutrient-specific extraction metadata is normalized while retaining confidence, page, bounding-box, and source-document references needed by the reviewer. The approved normalized state is then rendered into structured generation data and an auditable authorization rather than asking a model to free-write the financial document.
 
-Provider contracts also differ materially. Doctavian's hackathon API requires both a provisioned `X-Api-Key` and OAuth bearer authorization; Foxit MCP is a long-lived stdio process while eSign is direct HTTP; Nutrient's current extraction documentation shows two schema multipart envelopes, so VeriRemit uses the canonical `instructions` form first with one bounded request-shape fallback.
+Provider contracts also differ materially. Doctavian's hackathon API requires both a provisioned `X-Api-Key` and OAuth bearer authorization; Foxit MCP is a long-lived stdio process while eSign is direct HTTP. Live Nutrient probing also showed that its extraction schema accepts a deliberately restricted JSON-Schema subset, so the implementation was narrowed to the provider-proven request contract instead of preserving unsupported schema keywords.
 
 ## Accomplishments
 
 - A changed IBAN hard-blocks release even when all commercial fields match.
 - A suspicious change-letter phone number cannot be used as the trusted verification source.
 - Corrupting the audit chain disables consequential actions.
-- Doctavian generation cannot run without structured approved release data.
+- Structured generation cannot run without approved release data.
 - The deterministic Doctavian template includes merge fields, repeated verification-control rows, and a calculated control count.
-- Foxit signing is absent from the MCP tool catalog used by VeriRemit.
-- Foxit MCP can accept the Doctavian-generated PDF directly without re-generating it from model-produced HTML.
+- Foxit signing is absent from the MCP capability surface exposed to the VeriRemit agent.
+- Foxit MCP can accept the generated PDF directly without re-generating it from model-produced HTML.
 - The agent can request a direct eSign envelope only after the server has prepared an approved release.
 - Signing-session URLs are never returned to the language model.
 - Final authorization requires authoritative signature completion, not a browser redirect.
 - Sponsor adapters and fixture behavior are explicitly separated so local fixtures cannot be misrepresented as live API evidence.
 - The clean CI baseline passes 123/123 tests, strict TypeScript checks, production build, secret scan, Chromium E2E, Docker build, and real container `/health` startup.
+- The real Groq bounded-reviewer smoke passed.
+- The real Nutrient extraction returned five grounded fields and the DWS Viewer session succeeded.
+- The real Foxit MCP reversible PDF smoke passed.
+- The real Foxit eSign human-signature round trip reached authoritative `EXECUTED` state with a recorded signer action.
+
+## Current live verification
+
+**PASS:** Groq bounded reviewer, Nutrient Data Extraction, Nutrient DWS Viewer, Foxit PDF Services MCP, Foxit direct eSign, real human Foxit signature, authoritative Foxit completion.
+
+**BLOCKED:** Doctavian live generation only. The hackathon API key is provisioned; the remaining external dependency is the Microsoft OAuth bearer token generated through the supplied Postman collection.
+
+This distinction is intentional: the architecture and Doctavian integration exist, but the final canonical three-sponsor chain will not be described as fully live until the real Doctavian generation/download smoke succeeds.
 
 ## What I learned
 
@@ -99,7 +115,7 @@ Agent safety is easier to reason about when authority is moved out of the prompt
 
 ## What's next
 
-Complete the credential-gated provider verification, obtain the supported Doctavian OAuth bearer path for the provisioned hackathon account, complete the real Foxit human-signature round trip, record the 2–4 minute live demo, and submit the three sponsor tracks.
+Complete the supplied Doctavian Postman collection's Microsoft OAuth flow, run the real Doctavian template/data/generation/download smoke, then record the 2–4 minute end-to-end sponsor demo. The final Devpost submission also requires a public YouTube/Vimeo demo URL and a downloadable backup link to the original MP4. After those deliverables exist, opt into the Nutrient, Doctavian, and Foxit sponsor tracks and submit the project before the hackathon deadline.
 
 For a post-hackathon product, the next steps would be configurable policy packs for accounts-payable teams, ERP/vendor-master integrations, independent callback workflows, durable transactional storage, authenticated multi-user access, and externally anchored audit evidence.
 
