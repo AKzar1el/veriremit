@@ -28,11 +28,17 @@ test('agent config keeps provider credentials optional in fixture mode and never
     FOXIT_CLIENT_ID: 'foxit-id',
     FOXIT_CLIENT_SECRET: 'foxit-secret',
     VERIREMIT_SIGNER_EMAIL: 'reviewer@example.com',
+    GROQ_API_KEY: 'gsk-test-value',
+    DOCTAVIAN_API_KEY: 'doctavian-test-value',
+    DOCTAVIAN_API_BASE_URL: 'https://demo.api.doctavian.com',
   });
   assert.equal(config.nutrientApiKey, ' nutrient-key-with-spaces ');
   assert.equal(config.foxitClientId, 'foxit-id');
   assert.equal(config.foxitClientSecret, 'foxit-secret');
   assert.equal(config.signerEmail, 'reviewer@example.com');
+  assert.equal(config.groqApiKey, 'gsk-test-value');
+  assert.equal(config.doctavianApiKey, 'doctavian-test-value');
+  assert.equal(config.doctavianApiBaseUrl, 'https://demo.api.doctavian.com');
 });
 
 test('agent config accepts one explicit web origin for split frontend deployment', async () => {
