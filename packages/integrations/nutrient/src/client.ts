@@ -12,6 +12,7 @@ export interface DocumentExtractor {
 type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 
 type JsonSchema = Readonly<Record<string, unknown>>;
+type SchemaEnvelope = 'instructions' | 'schema';
 
 const EXTRACT_URL = 'https://api.nutrient.io/extraction/extract';
 
@@ -100,6 +101,25 @@ function internalDocumentId(kind: DocumentKind, filename: string): string {
   return `doc_${kind}_${safe}`;
 }
 
+function extractionForm(
+  input: { filename: string; bytes: Uint8Array; kind: DocumentKind },
+  envelope: SchemaEnvelope,
+): FormData {
+  const form = new FormData();
+  form.append('file', new Blob([input.bytes], { type: 'application/pdf' }), input.filename);
+  const schema = SCHEMAS[input.kind];
+  if (envelope === 'instructions') {
+    form.append('instructions', JSON.stringify({ schema }));
+  } else {
+    form.append('schema', JSON.stringify(schema));
+  }
+  return form;
+}
+
+function isRequestShapeFailure(status: number): boolean {
+  return status === 400 || status === 422;
+}
+
 export class NutrientExtractionClient implements DocumentExtractor {
   private readonly apiKey: string;
   private readonly fetchImpl: FetchLike;
@@ -113,25 +133,30 @@ export class NutrientExtractionClient implements DocumentExtractor {
     this.requestTimeoutMs = config.requestTimeoutMs ?? 30_000;
   }
 
+  private async send(
+    input: { filename: string; bytes: Uint8Array; kind: DocumentKind },
+    envelope: SchemaEnvelope,
+  ): Promise<Response> {
+    try {
+      return await this.fetchImpl(this.endpoint, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${this.apiKey}` },
+        body: extractionForm(input, envelope),
+        signal: AbortSignal.timeout(this.requestTimeoutMs),
+      });
+    } catch {
+      throw new NutrientProviderError('Nutrient extract request failed.');
+    }
+  }
+
   async extract(input: {
     filename: string;
     bytes: Uint8Array;
     kind: DocumentKind;
   }): Promise<ExtractedDocument> {
-    const form = new FormData();
-    form.append('file', new Blob([input.bytes], { type: 'application/pdf' }), input.filename);
-    form.append('schema', JSON.stringify(SCHEMAS[input.kind]));
-
-    let response: Response;
-    try {
-      response = await this.fetchImpl(this.endpoint, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${this.apiKey}` },
-        body: form,
-        signal: AbortSignal.timeout(this.requestTimeoutMs),
-      });
-    } catch {
-      throw new NutrientProviderError('Nutrient extract request failed.');
+    let response = await this.send(input, 'instructions');
+    if (!response.ok && isRequestShapeFailure(response.status)) {
+      response = await this.send(input, 'schema');
     }
 
     if (!response.ok) {
