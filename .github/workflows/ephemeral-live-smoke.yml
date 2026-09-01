@@ -80,3 +80,5 @@ jobs:
         run: |
           rm -f .env.local /tmp/veriremit-live-private.pem /tmp/veriremit-live-public.b64 \
             /tmp/veriremit-live-cipher.b64 /tmp/veriremit-live-cipher.bin
+
+# Temporary contract-validation workflow; remove after the live smoke pass.
