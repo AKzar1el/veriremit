@@ -14,6 +14,8 @@ import {
 import { FoxitEsignClient } from '../../../packages/integrations/foxit-esign/src/index.ts';
 import type { AgentConfig } from './config.ts';
 import { createDemoCase, DEMO_CASE_ID } from './demo/create-demo-case.ts';
+import { DoctavianGenerationClient } from './providers/doctavian-client.ts';
+import { DoctavianFoxitReleaseGateway } from './providers/doctavian-foxit-release-gateway.ts';
 import { FilesystemAuditRepository } from './repository/filesystem-audit-repository.ts';
 import { FilesystemCaseRepository } from './repository/filesystem-case-repository.ts';
 import { CaseService, CaseServiceError } from './services/case-service.ts';
@@ -23,6 +25,8 @@ export interface LiveProviderConfig {
   nutrientViewerApiKey: string;
   foxitClientId: string;
   foxitClientSecret: string;
+  doctavianApiKey: string;
+  groqApiKey: string;
   signerEmail: string;
 }
 
@@ -38,10 +42,17 @@ interface ViewerGateway {
 interface ReleasePacketGateway {
   prepare(input: {
     releaseHtml: string;
+    releaseData?: Readonly<Record<string, unknown>>;
     evidenceDocuments: Array<{ filename: string; bytes: Uint8Array }>;
     outputPath: string;
     outputFilename?: string;
-  }): Promise<{ id: string; filename: string; provider: 'foxit'; localPath: string }>;
+  }): Promise<{
+    id: string;
+    filename: string;
+    provider: 'foxit';
+    localPath: string;
+    generation?: { id: string; filename: string; provider: 'doctavian' };
+  }>;
 }
 
 interface SignatureGateway {
@@ -99,6 +110,8 @@ export function assertLiveProviderConfig(config: Partial<AgentConfig>): LiveProv
     ['NUTRIENT_DWS_VIEWER_API_KEY', config.nutrientViewerApiKey],
     ['FOXIT_CLIENT_ID', config.foxitClientId],
     ['FOXIT_CLIENT_SECRET', config.foxitClientSecret],
+    ['DOCTAVIAN_API_KEY', config.doctavianApiKey],
+    ['GROQ_API_KEY', config.groqApiKey],
     ['VERIREMIT_SIGNER_EMAIL', config.signerEmail],
   ] as const;
   const missing = required.filter(([, value]) => !value?.trim()).map(([name]) => name);
@@ -110,6 +123,8 @@ export function assertLiveProviderConfig(config: Partial<AgentConfig>): LiveProv
     nutrientViewerApiKey: config.nutrientViewerApiKey!,
     foxitClientId: config.foxitClientId!,
     foxitClientSecret: config.foxitClientSecret!,
+    doctavianApiKey: config.doctavianApiKey!,
+    groqApiKey: config.groqApiKey!,
     signerEmail: config.signerEmail!,
   };
 }
@@ -132,10 +147,19 @@ async function createDefaultLiveProviders(config: AgentConfig): Promise<LiveRunt
     throw error;
   }
 
+  const foxitReleaseGateway = new FoxitReleasePacketGateway(mcp);
+  const doctavian = new DoctavianGenerationClient({
+    apiKey: credentials.doctavianApiKey,
+    ...(config.doctavianApiBaseUrl ? { baseUrl: config.doctavianApiBaseUrl } : {}),
+  });
+
   return {
     extractor: new NutrientExtractionClient({ apiKey: credentials.nutrientApiKey }),
     viewer: new NutrientViewerGateway({ apiKey: credentials.nutrientViewerApiKey }),
-    releaseGateway: new FoxitReleasePacketGateway(mcp),
+    releaseGateway: new DoctavianFoxitReleaseGateway({
+      doctavian,
+      foxit: foxitReleaseGateway,
+    }),
     signatureGateway: new FoxitEsignClient({
       clientId: credentials.foxitClientId,
       clientSecret: credentials.foxitClientSecret,
@@ -176,6 +200,29 @@ function releaseHtml(value: VerificationCase): string {
     '<p>VeriRemit authorizes a human signature workflow only. It does not execute or transmit payment.</p>',
     '</body></html>',
   ].join('');
+}
+
+function structuredReleaseData(value: VerificationCase): Readonly<Record<string, unknown>> {
+  return {
+    Release: {
+      CaseId: value.id,
+      Supplier: factValue(value, 'vendor_master', 'beneficiary_name'),
+      VendorId: factValue(value, 'vendor_master', 'vendor_id'),
+      PoNumber: factValue(value, 'current_invoice', 'po_number'),
+      Amount: factValue(value, 'current_invoice', 'amount'),
+      Currency: factValue(value, 'current_invoice', 'currency'),
+      Beneficiary: factValue(value, 'current_invoice', 'beneficiary_name'),
+      Iban: factValue(value, 'current_invoice', 'iban'),
+      ReviewerName: value.humanVerification?.reviewerName ?? '',
+      VerificationReference: value.humanVerification?.reference ?? '',
+      VerifiedAt: value.humanVerification?.recordedAt ?? '',
+      Checks: value.rules.map((rule) => ({
+        Code: rule.code,
+        Outcome: rule.outcome,
+        Summary: rule.message,
+      })),
+    },
+  };
 }
 
 export async function createLiveRuntimeActions(options: LiveRuntimeOptions) {
@@ -242,6 +289,7 @@ export async function createLiveRuntimeActions(options: LiveRuntimeOptions) {
       const evidenceDocuments = (await liveFiles()).map(({ filename, bytes }) => ({ filename, bytes }));
       return service.prepareRelease(caseId, {
         releaseHtml: releaseHtml(value),
+        releaseData: structuredReleaseData(value),
         evidenceDocuments,
         outputPath: join(dataDir, 'releases', 'payment-release-authorization.pdf'),
         outputFilename: 'payment-release-authorization.pdf',
@@ -259,7 +307,7 @@ export async function createLiveRuntimeActions(options: LiveRuntimeOptions) {
         folderName: 'VeriRemit payment release PO-4821',
         filename: value.releaseDocument.filename,
         bytes,
-        signer: { firstName: 'Demo', lastName: 'Controller', email: credentials.signerEmail },
+        signer: { firstName: 'Tomi', lastName: 'Seregi', email: credentials.signerEmail },
         signSuccessUrl: `${baseUrl}/signing/success`,
         signDeclineUrl: `${baseUrl}/signing/declined`,
       });
