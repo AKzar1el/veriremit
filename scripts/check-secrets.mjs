@@ -6,6 +6,9 @@ const PATTERNS = [
   { type: 'openai-project-key', regex: /sk-proj-[A-Za-z0-9_-]{24,}/g },
   { type: 'github-fine-grained-token', regex: /github_pat_[A-Za-z0-9_]{30,}/g },
   { type: 'cloudflare-api-token', regex: /cfut_[A-Za-z0-9_-]{24,}/g },
+  { type: 'groq-api-key', regex: /gsk_[A-Za-z0-9_-]{30,}/g },
+  { type: 'doctavian-api-key', regex: /DOCTAVIAN_API_KEY\s*=\s*[0-9a-fA-F]{32,}/g },
+  { type: 'doctavian-access-token', regex: /DOCTAVIAN_ACCESS_TOKEN\s*=\s*eyJ[A-Za-z0-9._-]{20,}/g },
 ];
 
 export function scanTextForSecrets(text) {
