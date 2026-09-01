@@ -1,0 +1,145 @@
+name: Ephemeral Foxit signing-link recovery
+
+on:
+  push:
+    paths:
+      - '.github/workflows/ephemeral-signing-link.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Generate one-time credential encryption key
+        run: |
+          umask 077
+          openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 -out /tmp/veriremit-cred-private.pem >/dev/null 2>&1
+          openssl pkey -in /tmp/veriremit-cred-private.pem -pubout -outform DER \
+            | base64 -w0 > /tmp/veriremit-cred-public.b64
+      - name: Upload one-time credential public key
+        uses: actions/upload-artifact@v4
+        with:
+          name: veriremit-credential-public-key
+          path: /tmp/veriremit-cred-public.b64
+          if-no-files-found: error
+          retention-days: 1
+      - name: Wait for encrypted credentials
+        run: |
+          set -e
+          found=0
+          for attempt in $(seq 1 100); do
+            git fetch -q origin main
+            if git show origin/main:.github/live-smoke-secrets.b64 > /tmp/veriremit-cred-cipher.b64 2>/dev/null; then
+              found=1
+              break
+            fi
+            sleep 3
+          done
+          if [ "$found" -ne 1 ]; then
+            echo "Encrypted credential blob was not provided in time." >&2
+            exit 1
+          fi
+          base64 -d /tmp/veriremit-cred-cipher.b64 > /tmp/veriremit-cred-cipher.bin
+          openssl pkeyutl -decrypt \
+            -inkey /tmp/veriremit-cred-private.pem \
+            -in /tmp/veriremit-cred-cipher.bin \
+            -out .env.local \
+            -pkeyopt rsa_padding_mode:oaep \
+            -pkeyopt rsa_oaep_md:sha256
+          chmod 600 .env.local
+      - name: Regenerate pending embedded signing session
+        run: |
+          node --env-file-if-exists=.env.local --input-type=module <<'NODE'
+          import { writeFile } from 'node:fs/promises';
+          const required = name => {
+            const value = process.env[name]?.trim();
+            if (!value) throw new Error(`Missing ${name}.`);
+            return value;
+          };
+          const clientId = required('FOXIT_CLIENT_ID');
+          const clientSecret = required('FOXIT_CLIENT_SECRET');
+          const signer = required('VERIREMIT_SIGNER_EMAIL');
+          const headers = { client_id: clientId, client_secret: clientSecret, Accept: 'application/json' };
+          const date = new Date().toISOString().slice(0, 10);
+          let match;
+          for (const status of ['SHARED', 'PARTIALLY SIGNED']) {
+            const idsResponse = await fetch(`https://na1.fusion.foxit.com/esign/api/v1/folders/getAllFolderIdsByStatus?dateFrom=${date}&dateTo=${date}&status=${encodeURIComponent(status)}`, {
+              headers,
+              signal: AbortSignal.timeout(30000),
+            });
+            if (!idsResponse.ok) continue;
+            const idsPayload = await idsResponse.json();
+            const ids = Array.isArray(idsPayload?.allFolderIds) ? idsPayload.allFolderIds : [];
+            for (const id of [...ids].reverse()) {
+              const detailResponse = await fetch(`https://na1.fusion.foxit.com/esign/api/v1/folders/myfolder?folderId=${encodeURIComponent(String(id))}`, {
+                headers,
+                signal: AbortSignal.timeout(30000),
+              });
+              if (!detailResponse.ok) continue;
+              const detail = await detailResponse.json();
+              const folder = detail?.folder;
+              if (typeof folder?.folderName === 'string' && folder.folderName.startsWith('VeriRemit developer smoke')) {
+                match = Number(folder.folderId);
+                break;
+              }
+            }
+            if (Number.isInteger(match)) break;
+          }
+          if (!Number.isInteger(match)) throw new Error('Pending VeriRemit Foxit envelope was not found.');
+          const sessionResponse = await fetch('https://na1.fusion.foxit.com/esign/api/v1/embedded/regenerateEmbeddedSigningSession', {
+            method: 'POST',
+            headers: { ...headers, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ folderId: match, emailId: signer, sessionExpire: true, expiry: 3600000 }),
+            signal: AbortSignal.timeout(30000),
+          });
+          if (!sessionResponse.ok) throw new Error(`Foxit embedded-session regeneration failed with HTTP ${sessionResponse.status}.`);
+          const session = await sessionResponse.json();
+          if (typeof session?.embeddedSessionURL !== 'string' || !session.embeddedSessionURL.startsWith('https://')) {
+            throw new Error('Foxit did not return an embedded signing session URL.');
+          }
+          await writeFile('/tmp/veriremit-signing-link.txt', session.embeddedSessionURL, { mode: 0o600 });
+          console.log('Foxit embedded signing session regenerated with a one-hour expiry; URL intentionally not printed.');
+          NODE
+      - name: Encrypt signing link for return
+        env:
+          RETURN_PUBLIC_KEY_B64: 'LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUFySUxobnF6am9YMzBwOVNibDBSVApkZktyU0RiZVVQWUNiUjZpb1h6K29qVXBBN3NJMytzenNuQzNXbFk4aXU3QndWeVo4a0hoU1lEQ3RaaE42NVQ5CmJlOVJDNEZ1WnNKRzRFQTNqaEU5U3BpRkFZSFQwSWpJT2tlcjdIWGNEVVdWYkNyY0FML2FTR0gxZjBDRFRsSHYKOWloc05TQ3hZSjgwRnptRXFHVys1dm83Q1V2T21BV3IwekxTUXp3YU1rU25xenlVNDdLKzBRcGtZNU91V28xTQpXU0ZIZEZDcFJxMndTbzJ3QXFta3NzbzFmREFuV1NPaTkzQXUyUGQ5NTVPMjArWThEL1pyc1NTcUk2azFZYWhPCmZ3Nkt6SGhTMlFiZCs5ZjdvK2FJUW9oM1krRUFBUHRnQ3A4eTdwQXBGZUh5RjRyTWJJVFZUc3pnekgzWjZNSEkKbTZBSVZyWkNIdXIxMlRKaUJQVHhOMC9udVBZYk1qdkZxNWpoM0RvQ2djRXlYeDk4RkNEb1B5SHBwWHFEYVl2WgpKaE14ZEJFN3AwWVJFcTQ1SVVwdzlNb1pmRC9JalIzcTYxcjJ2d25vOGk5TktwK1U1RTJvS1NOWGdFN3Mvakd6Ck55KzNtbkxpcDBhTkRhcE02aG45ZU1sN3BiYU5lcWxLUnlLM09pYkMwalBQaWRjZHMxSTdNSFh1UDJBbVhSbGIKSVVCU2R5VTVlSUxkbkUwRytNUENoM09kSTNnZ05KOEloeFhrd3pZUE5kYmF2bWxtUWozRkJaclhtY0dSSnlVVQpzTWcxVHhQZ2FiK0RBQ3Y2cVVVaWxXd25VdXlNWVRqc1REdWduZkhLMzE0ZnVMZXF3Z1p3b3ZKWlB0ei9nbndiClptZElBcFVCYkdFZHpKR0h6TEhMaTBzQ0F3RUFBUT09Ci0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo='
+        run: |
+          set -e
+          umask 077
+          printf '%s' "$RETURN_PUBLIC_KEY_B64" | base64 -d > /tmp/veriremit-return-public.pem
+          openssl rand 32 > /tmp/veriremit-return-key.bin
+          openssl rand 16 > /tmp/veriremit-return-iv.bin
+          key_hex=$(xxd -p -c 256 /tmp/veriremit-return-key.bin)
+          iv_hex=$(xxd -p -c 256 /tmp/veriremit-return-iv.bin)
+          openssl enc -aes-256-cbc -K "$key_hex" -iv "$iv_hex" -in /tmp/veriremit-signing-link.txt -out /tmp/veriremit-signing-link.enc
+          openssl pkeyutl -encrypt -pubin -inkey /tmp/veriremit-return-public.pem \
+            -in /tmp/veriremit-return-key.bin -out /tmp/veriremit-return-key.enc \
+            -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256
+          mkdir -p /tmp/veriremit-return
+          cp /tmp/veriremit-return-key.enc /tmp/veriremit-return/key.enc
+          cp /tmp/veriremit-return-iv.bin /tmp/veriremit-return/iv.bin
+          cp /tmp/veriremit-signing-link.enc /tmp/veriremit-return/payload.enc
+      - name: Upload encrypted signing link
+        uses: actions/upload-artifact@v4
+        with:
+          name: veriremit-encrypted-signing-link
+          path: /tmp/veriremit-return
+          if-no-files-found: error
+          retention-days: 1
+      - name: Destroy ephemeral material
+        if: always()
+        run: |
+          rm -f .env.local /tmp/veriremit-cred-private.pem /tmp/veriremit-cred-public.b64 \
+            /tmp/veriremit-cred-cipher.b64 /tmp/veriremit-cred-cipher.bin \
+            /tmp/veriremit-signing-link.txt /tmp/veriremit-return-public.pem \
+            /tmp/veriremit-return-key.bin /tmp/veriremit-return-iv.bin \
+            /tmp/veriremit-signing-link.enc /tmp/veriremit-return-key.enc
+          rm -rf /tmp/veriremit-return
+
+# Temporary recovery workflow; remove after the encrypted link is retrieved.
