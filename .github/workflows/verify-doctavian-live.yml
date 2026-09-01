@@ -15,14 +15,56 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
       - uses: actions/setup-node@v7
         with:
           node-version: '22.12.0'
           cache: npm
+
       - run: npm ci
+
+      - name: Create temporary RSA keypair
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 -out /tmp/doctavian-private.pem >/dev/null 2>&1
+          openssl pkey -in /tmp/doctavian-private.pem -pubout -outform DER | base64 -w0 > /tmp/doctavian-public.b64
+
+      - name: Publish temporary public key
+        uses: actions/upload-artifact@v4
+        with:
+          name: doctavian-live-public-key
+          path: /tmp/doctavian-public.b64
+          retention-days: 1
+
+      - name: Receive encrypted one-run input
+        shell: bash
+        run: |
+          set -euo pipefail
+          found=0
+          for attempt in $(seq 1 120); do
+            git fetch -q origin main
+            if git show origin/main:.github/doctavian-live-input.b64 > /tmp/doctavian-cipher.b64 2>/dev/null; then
+              found=1
+              break
+            fi
+            sleep 3
+          done
+          if [ "$found" -ne 1 ]; then
+            echo 'Encrypted one-run input was not provided.' >&2
+            exit 1
+          fi
+          base64 -d /tmp/doctavian-cipher.b64 > /tmp/doctavian-cipher.bin
+          openssl pkeyutl -decrypt -inkey /tmp/doctavian-private.pem -in /tmp/doctavian-cipher.bin -out .env.local -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256
+          chmod 600 .env.local
+
       - name: Run live Doctavian smoke
-        env:
-          DOCTAVIAN_API_KEY: ${{ secrets.DOCTAVIAN_API_KEY }}
-          DOCTAVIAN_ACCESS_TOKEN: ${{ secrets.DOCTAVIAN_ACCESS_TOKEN }}
-          DOCTAVIAN_API_BASE_URL: https://demo.api.doctavian.com
         run: npm run smoke:doctavian
+
+      - name: Remove temporary material
+        if: always()
+        shell: bash
+        run: rm -f .env.local /tmp/doctavian-private.pem /tmp/doctavian-public.b64 /tmp/doctavian-cipher.b64 /tmp/doctavian-cipher.bin
