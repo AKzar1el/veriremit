@@ -1,0 +1,24 @@
+name: Verify Doctavian live smoke
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22.12.0'
+          cache: npm
+      - run: npm ci
+      - name: Run live Doctavian smoke
+        env:
+          DOCTAVIAN_API_KEY: ${{ secrets.DOCTAVIAN_API_KEY }}
+          DOCTAVIAN_ACCESS_TOKEN: ${{ secrets.DOCTAVIAN_ACCESS_TOKEN }}
+          DOCTAVIAN_API_BASE_URL: https://demo.api.doctavian.com
+        run: npm run smoke:doctavian
