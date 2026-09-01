@@ -47,7 +47,7 @@ test('live smoke scripts load gitignored .env.local and document every required 
   const packageJson = JSON.parse(await readFile('package.json', 'utf8')) as {
     scripts?: Record<string, string>;
   };
-  for (const scriptName of ['smoke:nutrient', 'smoke:doctavian', 'smoke:foxit:mcp', 'smoke:foxit:esign']) {
+  for (const scriptName of ['smoke:groq', 'smoke:nutrient', 'smoke:doctavian', 'smoke:foxit:mcp', 'smoke:foxit:esign']) {
     assert.match(
       packageJson.scripts?.[scriptName] ?? '',
       /node --env-file-if-exists=\.env\.local --experimental-strip-types/,
