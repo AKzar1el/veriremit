@@ -8,7 +8,7 @@ VeriRemit deliberately separates the browser UI from the live agent runtime.
 - **Agent/API:** run `Dockerfile.agent` on a long-lived Node container host with persistent storage mounted at `/var/lib/veriremit`.
 - **Why not edge/serverless for the live agent:** Foxit's official integration is a local stdio MCP process. The agent owns that child process for its service lifetime and closes it during graceful shutdown. A persistent container is the conservative runtime for this requirement.
 
-Fixture mode can be used for public UI previews, but fixture behavior must never be presented as live Nutrient/Foxit evidence.
+Fixture mode can be used for public UI previews, but fixture behavior must never be presented as live Nutrient, Doctavian, Groq, or Foxit evidence.
 
 ### Access-control requirement
 
@@ -31,15 +31,25 @@ VERIREMIT_PROVIDER_MODE=live
 VERIREMIT_PUBLIC_BASE_URL=https://<agent-host>
 VERIREMIT_WEB_ORIGIN=https://<web-host>
 VERIREMIT_SIGNER_EMAIL=<human signer email>
+
+GROQ_API_KEY=<secret>
+
 NUTRIENT_API_KEY=<secret>
 NUTRIENT_DWS_VIEWER_API_KEY=<secret>
+
+DOCTAVIAN_API_KEY=<secret>
+DOCTAVIAN_ACCESS_TOKEN=<oauth bearer token>
+DOCTAVIAN_API_BASE_URL=https://demo.api.doctavian.com
+
 FOXIT_CLIENT_ID=<secret>
 FOXIT_CLIENT_SECRET=<secret>
 FOXIT_API_HOST=https://na1.fusion.foxit.com/pdf-services
 FOXIT_ESIGN_HOST=https://na1.fusion.foxit.com
 ```
 
-`OPENAI_API_KEY` is required only for the bounded natural-language agent path; deterministic verification, case state, audit integrity, Nutrient extraction, Foxit MCP, and eSign do not depend on model judgment.
+`GROQ_API_KEY` powers the bounded reviewer through Groq's OpenAI-compatible endpoint with `openai/gpt-oss-120b`. `OPENAI_API_KEY` remains an optional fallback and is not required for the zero-cost hackathon live path.
+
+Doctavian's current hackathon/API contract requires **both** its provisioned API key and an OAuth bearer access token. The key alone is not treated as sufficient live authorization.
 
 Mount persistent storage:
 
@@ -61,6 +71,25 @@ If this variable is absent, the web app uses same-origin `/api/...` paths, which
 
 When `VITE_API_BASE_URL` points at a separate agent origin, set the agent's `VERIREMIT_WEB_ORIGIN` to the exact public web origin. The API does not use wildcard CORS.
 
+## Live provider order
+
+The consequential live path is intentionally ordered:
+
+```text
+Groq bounded reviewer
+  -> Nutrient extraction + DWS Viewer
+  -> deterministic VeriRemit policy
+  -> human trusted callback
+  -> server-side release gate
+  -> Doctavian structured PDF generation
+  -> Foxit MCP reversible packet assembly
+  -> Foxit eSign envelope
+  -> human signer
+  -> authoritative Foxit status
+```
+
+Neither Groq nor any sponsor adapter can bypass the deterministic release gate.
+
 ## Health and verification
 
 Agent readiness:
@@ -73,15 +102,15 @@ Then run the synthetic demo flow in fixture mode before configuring live secrets
 
 ## Current execution status
 
-A clean Ubuntu GitHub Actions run now verifies the deployment package end to end without sponsor secrets:
+A clean Ubuntu GitHub Actions run verifies the deployment package end to end without sponsor secrets:
 
 - installs the committed dependency graph with `npm ci`;
 - reports 0 high-or-greater production dependency vulnerabilities;
-- passes 113/113 unit/integration/contract tests, all TypeScript checks, the Vite production build, and the repository secret scan;
+- passes 123/123 unit/integration/contract tests, all TypeScript checks, the Vite production build, and the repository secret scan;
 - passes both Chromium fixture-mode Playwright tests with retries disabled;
 - builds `Dockerfile.agent` with production dependencies from the committed lockfile;
 - starts the built container in fixture mode and receives HTTP 200 from `/health`.
 
-This proves clean-clone reproducibility, browser integration, container packaging, process startup, and fixture-mode health. It does **not** prove a hosted live deployment or any Nutrient/Foxit sponsor call.
+This proves clean-clone reproducibility, browser integration, container packaging, process startup, and fixture-mode health. It does **not** prove a hosted live deployment or any live Groq/Nutrient/Doctavian/Foxit call.
 
 A public hosted agent is not required by the current sponsor submission criteria, so it is lower priority than live provider verification and the final recording. If the agent is hosted for convenience, keep it private/authenticated; CORS alone is not an access-control boundary.
