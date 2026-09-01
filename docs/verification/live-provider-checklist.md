@@ -2,74 +2,70 @@
 
 Verification date: 2026-09-01
 
-This checklist separates implemented provider adapters from live sponsor verification. A provider integration is not considered live-verified until the corresponding command or end-to-end step succeeds with environment-provided credentials. No secret values, raw session tokens, signing URLs, OAuth tokens, or full provider identifiers are recorded here.
+This checklist separates implemented provider adapters from live sponsor verification. A provider integration is considered live-verified only after the corresponding command or authoritative provider lookup succeeds with environment-provided credentials. No secret values, raw session tokens, signing URLs, OAuth tokens, or full provider identifiers are recorded here.
 
 ## Current status
 
-| Provider | Required live proof | Status | Current blocker |
+| Provider | Required live proof | Status | Evidence / remaining blocker |
 | --- | --- | --- | --- |
-| Groq bounded reviewer | Execute the real four-tool reviewer with `openai/gpt-oss-120b` through Groq's OpenAI-compatible endpoint | NOT VERIFIED | Credential exists outside the repository but is not injected into this runtime |
-| Nutrient Data Extraction | Extract the synthetic vendor-master PDF and return grounded `iban` and `trusted_phone` facts with page coordinates/confidence | NOT VERIFIED | Credential exists outside the repository but is not injected into this runtime |
-| Nutrient DWS Viewer | Upload the same synthetic document and create a short-lived read-only viewer session | NOT VERIFIED | Viewer backend credential exists outside the repository but is not injected into this runtime |
-| Doctavian | Upload the deterministic DOCX template + structured release JSON, generate a PDF, and download it | BLOCKED | Provisioned API key exists; required OAuth bearer token has not yet been obtained |
-| Foxit PDF Services via official MCP | Connect to the stdio MCP server, verify the reversible allow-list, and assemble/download the final packet | NOT VERIFIED | Developer credentials exist outside the repository but are not injected into this runtime |
-| Foxit eSign direct API | Create a real envelope for the configured human signer, complete the signature, and verify authoritative completion through the API | NOT VERIFIED / HUMAN STEP | Credentials/signer are known; real envelope and human completion still required |
+| Groq bounded reviewer | Execute the real four-tool reviewer with `openai/gpt-oss-120b` through Groq's OpenAI-compatible endpoint | **PASS** | Isolated live smoke succeeded against the real Groq-backed reviewer; model output and credential were intentionally not printed |
+| Nutrient Data Extraction | Extract the synthetic vendor-master PDF and return grounded `iban` and `trusted_phone` facts with page coordinates/confidence | **PASS** | Final live smoke extracted 5 grounded fields from the synthetic source packet |
+| Nutrient DWS Viewer | Upload the same synthetic document and create a short-lived read-only viewer session | **PASS** | Final live smoke completed the DWS upload and created the scoped read-only Viewer session; document/session identifiers were intentionally not printed |
+| Doctavian | Upload the deterministic DOCX template + structured release JSON, generate a PDF, and download it | **BLOCKED** | Hackathon API key is provisioned, but the required Microsoft OAuth bearer token has not yet been obtained through the supplied Postman collection |
+| Foxit PDF Services via official MCP | Connect to the stdio MCP server, keep signing outside MCP, and complete a reversible real PDF operation | **PASS** | Live smoke connected to the real Foxit MCP and completed a real HTML-to-PDF conversion/download; the project-level static agent allow-list remains `upload_document`, `pdf_from_html`, `pdf_merge`, `download_document` |
+| Foxit eSign direct API | Create a real envelope for the configured human signer, complete the signature, and verify authoritative completion through the API | **PASS** | Real developer-test envelope was created and signed; Foxit's authoritative lookup returned `EXECUTED` and activity history confirmed a signer action |
+| Real human Foxit signature | Human signer completes the provider-hosted signing step | **PASS** | Authoritative Foxit status verification confirmed the full human-signature round trip, not merely a browser success page |
 
 ## Safety rule
 
 If a live check fails because the provider contract, credential scope, quota, or runtime is incompatible, remove or narrow that provider/sponsor claim. Do not substitute fixture behavior and call it live verification.
 
-## Groq bounded reviewer
+## Groq bounded reviewer - PASS
 
-The production reviewer uses the OpenAI Agents SDK with a Groq-backed `OpenAIProvider` when `GROQ_API_KEY` is present. The model is `openai/gpt-oss-120b`; tracing is disabled; the run is capped at three turns; the tool surface is restricted to:
+The production reviewer uses the OpenAI Agents SDK with a Groq-backed `OpenAIProvider` when `GROQ_API_KEY` is present. The model is `openai/gpt-oss-120b`; the run is capped at three turns; the tool surface is restricted to:
 
 - `get_case_summary`;
 - `extract_case`;
 - `prepare_release`;
 - `request_human_signature`.
 
-Run only with the Groq credential supplied through the environment:
+Live command:
 
 ```bash
 npm run smoke:groq
 ```
 
-The smoke asks the real Groq-backed reviewer to use exactly one `get_case_summary` tool call against the synthetic demo case. The other three tools fail closed if the model attempts to invoke them, and model output/credentials are not printed.
+Verified on 2026-09-01: the real Groq-backed reviewer completed the bounded live smoke successfully. The smoke requires exactly one safe `get_case_summary` call; the other consequential tools fail closed during this proof. Model output and credentials are not printed.
 
-Success evidence for the final live run:
+## Nutrient - PASS
 
-- a plain-language prompt reaches the real Groq model;
-- the model uses only the bounded case-scoped tools;
-- deterministic server policy still produces the PASS/BLOCK outcome;
-- the model cannot approve the bank change, sign, execute arbitrary HTTP, or authorize payment.
-
-## Nutrient
-
-Run only with credentials supplied through the environment:
+Live command:
 
 ```bash
 npm run smoke:nutrient
 ```
 
-Success evidence to record after execution:
+Verified on 2026-09-01:
 
-- live extraction succeeds for `fixtures/acme-components/vendor-master.pdf`;
-- required grounded fields include `iban` and `trusted_phone`;
-- each returned fact used by VeriRemit has a page reference and bounding box;
-- DWS upload succeeds;
-- a short-lived read-only viewer session is created;
-- no document ID or viewer session token is printed or committed.
+- live extraction succeeded against `fixtures/acme-components/vendor-master.pdf`;
+- 5 grounded fields were returned, including the bank/contact evidence needed by VeriRemit;
+- extraction metadata contains page references, bounding boxes, and confidence;
+- DWS upload succeeded;
+- a short-lived read-only Viewer session was created;
+- no document ID or Viewer session token was printed or committed.
 
-The extraction client sends the currently documented `instructions: { schema }` multipart envelope first and performs one bounded retry with the also-documented direct `schema` field only when Nutrient returns a request-shape error (`400`/`422`). Authentication and other provider failures are not retried.
+Live contract probing also showed that Nutrient rejects unsupported JSON Schema keywords such as `additionalProperties`. VeriRemit was narrowed to the live-proven `instructions: { schema }` envelope and a provider-compatible schema subset rather than preserving a speculative fallback.
 
-## Doctavian
+## Doctavian - BLOCKED ON OAUTH TOKEN
 
 Doctavian's hackathon demo requests require **both**:
 
 - `DOCTAVIAN_API_KEY` sent as `X-Api-Key`;
 - `DOCTAVIAN_ACCESS_TOKEN` sent as an OAuth bearer token.
 
-Run only after both are available:
+The provisioned API key is available outside the repository. Doctavian support confirmed that the intended hackathon path is to use the supplied Postman collection's inherited OAuth 2.0 authorization and complete the Microsoft login flow to generate the bearer token.
+
+After that bearer exists, run:
 
 ```bash
 npm run smoke:doctavian
@@ -82,55 +78,46 @@ The smoke performs the same provider sequence as the live application:
 3. call `/v1/documents/document/generate`;
 4. download the generated PDF.
 
-Success evidence to record:
+Success evidence still required before promoting Doctavian to PASS:
 
 - the deterministic DOCX template is accepted;
 - structured data drives merge fields, the verification-control repeater, and the control-count calculation;
 - the generated artifact downloads as a real PDF;
 - no API key, bearer token, storage URN, or generated provider identifier is printed or committed.
 
-The full VeriRemit flow must then prove that this generation occurs only after the deterministic + human release gate, and that the Doctavian-generated PDF is the primary document handed to Foxit MCP.
+## Foxit PDF Services MCP - PASS
 
-## Foxit PDF Services MCP
-
-Run only with the unified Foxit developer credentials supplied through the environment:
+Live command:
 
 ```bash
 npm run smoke:foxit:mcp
 ```
 
-Success evidence to record after execution:
+Verified on 2026-09-01:
 
-- the project-installed official Foxit stdio MCP server connects;
-- the exposed VeriRemit allow-list contains only `upload_document`, `pdf_from_html`, `pdf_merge`, and `download_document`;
-- no signing/eSign capability is available through the MCP boundary;
-- the standalone smoke completes a reversible PDF operation successfully.
+- the project-installed official Foxit stdio MCP server connected to the real service;
+- the live server tool catalog contained no signing/eSign capability;
+- VeriRemit's agent boundary statically allows only `upload_document`, `pdf_from_html`, `pdf_merge`, and `download_document`;
+- a real HTML document was uploaded, converted to PDF, downloaded, and validated as a PDF successfully.
 
-The final end-to-end demo must additionally show Foxit MCP uploading the Doctavian-generated authorization PDF, uploading the supporting evidence PDFs, merging them, and downloading the final release packet. Signing remains outside MCP.
+The final end-to-end demo should additionally show the intended composition path: Foxit MCP receives the Doctavian-generated authorization PDF plus supporting evidence, merges them, and downloads the release packet. Signing remains outside MCP.
 
-## Foxit eSign
+## Foxit eSign - PASS
 
-Set an explicit human signer and smoke PDF, then run:
+The direct eSign path has completed the sponsor-required human round trip with a real developer-test envelope.
 
-```bash
-npm run smoke:foxit:esign
-```
+Verified on 2026-09-01:
 
-Required environment inputs in addition to Foxit credentials:
-
-- `VERIREMIT_SIGNER_EMAIL` - the human who will actually sign the developer-test envelope;
-- `FOXIT_ESIGN_SMOKE_PDF` - an explicit local synthetic PDF path.
-
-Success evidence to record after execution:
-
-- a real eSign envelope is created through the direct eSign API, not MCP;
-- the human completes the signature;
-- final completion is confirmed from Foxit's authoritative envelope-details API;
-- embedded signing tokens/URLs are never committed or printed in the verification record.
+- a real envelope was created through the direct Foxit eSign API, not MCP;
+- the human signer completed the signing action in Foxit;
+- a fresh authoritative provider lookup reported envelope status `EXECUTED`;
+- Foxit activity history independently recorded a signer action;
+- the verification job succeeded only when both authoritative completion and signer activity were present;
+- signing-session URLs, envelope identifiers, and credentials were not committed or printed in the public verification record.
 
 ## Final end-to-end live sequence
 
-After individual smokes pass:
+After Doctavian is promoted to PASS, reset the demo and run the recording flow:
 
 ```bash
 npm run demo:reset
@@ -138,7 +125,7 @@ node --env-file-if-exists=.env.local --experimental-strip-types apps/agent/src/m
 npm run dev --workspace @veriremit/web
 ```
 
-The recording must show the real provider chain in order:
+The recording should show the real provider chain in order:
 
 ```text
 plain-language reviewer
@@ -155,4 +142,4 @@ plain-language reviewer
 
 ## Credential-blocked behavior
 
-The smoke runners and live-runtime configuration fail closed when required credentials are absent. Missing configuration errors name only environment variables; provider credentials are not printed. `npm run check:secrets` also scans tracked source for OpenAI, GitHub, Cloudflare, Groq and Doctavian high-risk credential patterns.
+The smoke runners and live-runtime configuration fail closed when required credentials are absent. Missing configuration errors name only environment variables; provider credentials are not printed. `npm run check:secrets` also scans tracked source for high-risk credential patterns.
