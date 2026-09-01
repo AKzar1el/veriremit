@@ -22,7 +22,7 @@ Last updated: 2026-09-01
 | Live Groq bounded reviewer | **PASS** | Real Groq-backed bounded reviewer smoke succeeded; model output/credential were intentionally not printed |
 | Live Nutrient extraction | **PASS** | Real extraction succeeded with 5 grounded fields from the synthetic vendor-master document |
 | Live Nutrient DWS Viewer | **PASS** | Real DWS upload and scoped read-only Viewer session succeeded; provider identifiers/tokens were intentionally not printed |
-| Live Doctavian generation | **BLOCKED** | Hackathon API key is provisioned; required Microsoft OAuth bearer token must still be generated through the supplied Postman OAuth flow |
+| Live Doctavian generation | **BLOCKED** | Microsoft OAuth token acquisition succeeded, but the demo API returns `401 AUTHORIZATION_ERROR` on caller profile/membership, limits, and template upload calls; sponsor-side caller/team authorization must be clarified or corrected |
 | Live Foxit MCP | **PASS** | Real Foxit stdio MCP connected and completed a reversible HTML-to-PDF conversion/download; signing capability remained outside the agent boundary |
 | Live Foxit eSign envelope | **PASS** | A real developer-test envelope was created through the direct eSign API and completed by the human signer |
 | Real human Foxit signature | **PASS** | Fresh authoritative Foxit lookup reported `EXECUTED`; activity history independently confirmed a signer action |
@@ -34,17 +34,18 @@ Last updated: 2026-09-01
 | Public live API access control | BLOCKED FOR PUBLIC HOSTING | CORS is configured but authentication is intentionally external; keep live API private/local or protect it with an authenticated access proxy |
 | 2-4 minute sponsor video | **BLOCKED ON DOCTAVIAN** | Groq, Nutrient and Foxit proof now exist; record the canonical sponsor demo only after the real Doctavian generation smoke passes |
 | Downloadable MP4 backup | PENDING | Devpost requires a downloadable backup link to the original demo MP4 in addition to the YouTube/Vimeo demo URL |
-| Final Devpost submit | **BLOCKED ON REQUIRED DELIVERABLES** | Obtain Doctavian OAuth, pass the live Doctavian smoke, record/upload the demo and MP4 backup, select sponsor tracks, then submit before the deadline |
+| Final Devpost submit | **BLOCKED ON REQUIRED DELIVERABLES** | Resolve Doctavian demo caller authorization, pass the live Doctavian smoke, record/upload the demo and MP4 backup, select sponsor tracks, then submit before the deadline |
 
-The remaining implementation risk is concentrated in one external dependency: Doctavian's Microsoft OAuth bearer token. Groq, Nutrient extraction + Viewer, Foxit MCP, and the Foxit direct eSign human-signature round trip have all produced live provider evidence. The canonical full sponsor chain is **not** yet represented as end-to-end live because Doctavian generation has not run against the real API.
+The remaining implementation risk is concentrated in one external dependency: Doctavian's demo authorization boundary. The Microsoft OAuth flow now successfully issues an API-scoped access token, so OAuth acquisition itself is no longer the blocker. A credential-safe clean server-side verification reproduced `401 AUTHORIZATION_ERROR` before document processing, including on `/v1/common/user/get`, which the sponsor collection describes as returning caller profile and membership details. Groq, Nutrient extraction + Viewer, Foxit MCP, and the Foxit direct eSign human-signature round trip have all produced live provider evidence. The canonical full sponsor chain is **not** yet represented as end-to-end live because Doctavian generation has not run against the real API.
 
 The critical path is now:
 
-1. complete the supplied Doctavian Postman collection's Microsoft OAuth flow and obtain the bearer token;
-2. run `npm run smoke:doctavian` and promote Doctavian only if the real template/data/generation/download sequence succeeds;
-3. reset the demo and record the 2-4 minute end-to-end flow;
-4. upload the public demo video and a downloadable original-MP4 backup;
-5. opt into the Foxit, Nutrient, and Doctavian sponsor prizes;
-6. submit the project to the hackathon before the deadline.
+1. have Doctavian confirm/correct authorization of the Microsoft identity for the provisioned Team Tomi demo account, or provide the missing server-side caller context if one exists;
+2. obtain a fresh OAuth token if required after that correction and run `npm run smoke:doctavian`;
+3. promote Doctavian only if the real template/data/generation/download sequence succeeds;
+4. reset the demo and record the 2-4 minute end-to-end flow;
+5. upload the public demo video and a downloadable original-MP4 backup;
+6. opt into the Foxit, Nutrient, and Doctavian sponsor prizes;
+7. submit the project to the hackathon before the deadline.
 
 A `BLOCKED` row is not a failed feature claim. It means the implementation exists but the required external evidence or submission deliverable has not yet been produced. Sponsor copy must stay gated until the corresponding live check passes.
