@@ -47,7 +47,7 @@ test('live smoke scripts load gitignored .env.local and document every required 
   const packageJson = JSON.parse(await readFile('package.json', 'utf8')) as {
     scripts?: Record<string, string>;
   };
-  for (const scriptName of ['smoke:nutrient', 'smoke:foxit:mcp', 'smoke:foxit:esign']) {
+  for (const scriptName of ['smoke:nutrient', 'smoke:doctavian', 'smoke:foxit:mcp', 'smoke:foxit:esign']) {
     assert.match(
       packageJson.scripts?.[scriptName] ?? '',
       /node --env-file-if-exists=\.env\.local --experimental-strip-types/,
@@ -56,6 +56,10 @@ test('live smoke scripts load gitignored .env.local and document every required 
   }
 
   const envExample = await readFile('.env.example', 'utf8');
+  assert.match(envExample, /^GROQ_API_KEY=$/m);
+  assert.match(envExample, /^DOCTAVIAN_API_KEY=$/m);
+  assert.match(envExample, /^DOCTAVIAN_ACCESS_TOKEN=$/m);
+  assert.match(envExample, /^DOCTAVIAN_API_BASE_URL=https:\/\/demo\.api\.doctavian\.com$/m);
   assert.match(envExample, /^FOXIT_ESIGN_SMOKE_PDF=$/m);
 
   const gitignore = await readFile('.gitignore', 'utf8');
