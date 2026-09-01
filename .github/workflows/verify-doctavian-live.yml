@@ -18,13 +18,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '22.12.0'
-          cache: npm
-
-      - run: npm ci
-
       - name: Create temporary RSA keypair
         shell: bash
         run: |
@@ -71,22 +64,19 @@ jobs:
           done
           chmod 600 .env.local
 
-      - name: Isolate bearer and API-key authentication
+      - name: Probe Doctavian caller membership
         shell: bash
         run: |
           node --env-file-if-exists=.env.local --input-type=module <<'NODE'
-          const required = (name) => {
-            const value = process.env[name]?.trim();
-            if (!value) throw new Error(`Missing ${name}.`);
-            return value;
-          };
+          const token = process.env.DOCTAVIAN_ACCESS_TOKEN?.trim();
+          if (!token) throw new Error('Missing DOCTAVIAN_ACCESS_TOKEN.');
           const baseUrl = (process.env.DOCTAVIAN_API_BASE_URL || 'https://demo.api.doctavian.com').replace(/\/+$/, '');
-          const token = required('DOCTAVIAN_ACCESS_TOKEN');
-          const apiKey = required('DOCTAVIAN_API_KEY');
 
-          async function summary(label, headers) {
-            const response = await fetch(`${baseUrl}/v1/common/limits/get`, {
-              headers: { Accept: 'application/json', ...headers },
+          async function probe(label, path, authenticated) {
+            const response = await fetch(`${baseUrl}${path}`, {
+              headers: authenticated
+                ? { Accept: 'application/json', Authorization: `Bearer ${token}` }
+                : { Accept: 'application/json' },
               signal: AbortSignal.timeout(30000),
             });
             const text = await response.text();
@@ -94,9 +84,11 @@ jobs:
             try {
               const value = JSON.parse(text);
               const err = value?.error;
+              const profile = value?.result?.data;
               detail = JSON.stringify({
                 resultStatus: value?.result?.statusCode,
                 resultMessage: value?.result?.message,
+                profilePresent: Boolean(profile && typeof profile === 'object'),
                 errorStatus: err?.statusCode,
                 errorMessage: err?.message,
                 innerCodes: Array.isArray(err?.innerErrors) ? err.innerErrors.map((item) => item?.code).filter(Boolean) : [],
@@ -107,9 +99,8 @@ jobs:
             console.log(`${label}: HTTP ${response.status}; ${detail}`);
           }
 
-          await summary('limits bearer only', { Authorization: `Bearer ${token}` });
-          await summary('limits api key only', { 'X-Api-Key': apiKey });
-          await summary('limits bearer + api key', { Authorization: `Bearer ${token}`, 'X-Api-Key': apiKey });
+          await probe('public common status', '/v1/common/status', false);
+          await probe('caller profile and membership', '/v1/common/user/get', true);
           NODE
 
       - name: Remove temporary material
