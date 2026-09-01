@@ -15,7 +15,7 @@ test('live provider bootstrap fails closed with the exact missing credential nam
       publicBaseUrl: 'https://demo.example',
       dataDir: '.data',
     }),
-    /NUTRIENT_API_KEY, NUTRIENT_DWS_VIEWER_API_KEY, FOXIT_CLIENT_ID, FOXIT_CLIENT_SECRET, VERIREMIT_SIGNER_EMAIL/,
+    /NUTRIENT_API_KEY, NUTRIENT_DWS_VIEWER_API_KEY, FOXIT_CLIENT_ID, FOXIT_CLIENT_SECRET, DOCTAVIAN_API_KEY, GROQ_API_KEY, VERIREMIT_SIGNER_EMAIL/,
   );
 });
 
@@ -37,6 +37,7 @@ test('live actions use injected sponsor gateways through the authoritative case 
   let viewerUploads = 0;
   let closeCalls = 0;
   let signSuccessUrl: string | undefined;
+  let receivedReleaseData: any;
 
   const providers = {
     extractor: {
@@ -57,7 +58,8 @@ test('live actions use injected sponsor gateways through the authoritative case 
       },
     },
     releaseGateway: {
-      async prepare(input: { outputPath: string; outputFilename?: string }) {
+      async prepare(input: { outputPath: string; outputFilename?: string; releaseData?: Readonly<Record<string, unknown>> }) {
+        receivedReleaseData = input.releaseData;
         await mkdir(dirname(input.outputPath), { recursive: true });
         await writeFile(input.outputPath, '%PDF-1.4\n% live gateway test\n', { mode: 0o600 });
         return {
@@ -65,6 +67,11 @@ test('live actions use injected sponsor gateways through the authoritative case 
           filename: input.outputFilename ?? 'payment-release-authorization.pdf',
           provider: 'foxit' as const,
           localPath: input.outputPath,
+          generation: {
+            id: 'doctavian-live-generation-1',
+            filename: 'doctavian-payment-release-authorization.pdf',
+            provider: 'doctavian' as const,
+          },
         };
       },
     },
@@ -94,6 +101,8 @@ test('live actions use injected sponsor gateways through the authoritative case 
         nutrientViewerApiKey: 'viewer-test',
         foxitClientId: 'foxit-client-test',
         foxitClientSecret: 'foxit-secret-test',
+        doctavianApiKey: 'doctavian-test',
+        groqApiKey: 'gsk-test',
         signerEmail: 'controller@example.com',
       },
       fixtureDir,
@@ -128,6 +137,19 @@ test('live actions use injected sponsor gateways through the authoritative case 
     assert.equal(viewerUploads, 1);
 
     assert.equal((await runtime.actions.prepareRelease('case_acme_po_4821')).status, 'release_prepared');
+    assert.equal(receivedReleaseData?.Release?.CaseId, 'case_acme_po_4821');
+    assert.equal(receivedReleaseData?.Release?.Supplier, 'ACME Components GmbH');
+    assert.equal(receivedReleaseData?.Release?.VendorId, 'V-1042');
+    assert.equal(receivedReleaseData?.Release?.PoNumber, 'PO-4821');
+    assert.equal(receivedReleaseData?.Release?.Amount, '48620.00');
+    assert.equal(receivedReleaseData?.Release?.Currency, 'EUR');
+    assert.equal(receivedReleaseData?.Release?.Iban, 'DE72 5001 0517 5407');
+    assert.equal(receivedReleaseData?.Release?.ReviewerName, 'Demo Controller');
+    assert.equal(receivedReleaseData?.Release?.VerificationReference, 'VR-LIVE-4821');
+    assert.equal(receivedReleaseData?.Release?.VerifiedAt, '2026-08-29T02:00:00.000Z');
+    assert.ok(Array.isArray(receivedReleaseData?.Release?.Checks));
+    assert.ok(receivedReleaseData.Release.Checks.length > 0);
+
     const pending = await runtime.actions.sign('case_acme_po_4821');
     assert.equal(pending.status, 'signature_pending');
     assert.equal(pending.signature?.signingUrl, 'https://sign.example/session');
