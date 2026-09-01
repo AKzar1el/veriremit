@@ -45,7 +45,7 @@ Nutrient DWS is VeriRemit's evidence layer: Data Extraction turns the source PDF
 
 Doctavian is VeriRemit's approved-document generation layer. After deterministic controls and the trusted human callback clear the release gate, VeriRemit uploads a structured JSON representation of the approved case and a deterministic DOCX template. The template contains merge fields for the case/payment facts, a repeater over verification-control results, and a calculated control count. Doctavian is intended to generate the canonical Payment Release Authorization PDF that is then handed to Foxit for assembly.
 
-The adapter/template/composition are complete, but the real hackathon account still requires a Microsoft OAuth bearer token in addition to its provisioned API key. Until that OAuth flow is completed and the live generation smoke passes, VeriRemit does not represent Doctavian as live-verified.
+The adapter/template/composition are complete, the hackathon API key is provisioned, and the supplied Microsoft OAuth flow successfully issued an API-scoped bearer token. A credential-safe clean server-side verification currently receives `401 AUTHORIZATION_ERROR` before document processing—including from Doctavian's caller profile/membership endpoint and template upload. The remaining dependency is therefore sponsor-side authorization/mapping of the Microsoft caller to the provisioned demo account, or clarification of any additional demo caller context. Until that provider-side authorization issue is resolved and the live generation smoke passes, VeriRemit does not represent Doctavian as live-verified.
 
 ## Where Foxit does the heavy lifting
 
@@ -80,7 +80,7 @@ The hardest boundary was making the agent useful without making it authoritative
 
 A second challenge was preserving evidence provenance across provider boundaries. Nutrient-specific extraction metadata is normalized while retaining confidence, page, bounding-box, and source-document references needed by the reviewer. The approved normalized state is then rendered into structured generation data and an auditable authorization rather than asking a model to free-write the financial document.
 
-Provider contracts also differ materially. Doctavian's hackathon API requires both a provisioned `X-Api-Key` and OAuth bearer authorization; Foxit MCP is a long-lived stdio process while eSign is direct HTTP. Live Nutrient probing also showed that its extraction schema accepts a deliberately restricted JSON-Schema subset, so the implementation was narrowed to the provider-proven request contract instead of preserving unsupported schema keywords.
+Provider contracts also differ materially. Doctavian's documented generation flow requires both a provisioned `X-Api-Key` and OAuth bearer authorization; Foxit MCP is a long-lived stdio process while eSign is direct HTTP. Live Nutrient probing also showed that its extraction schema accepts a deliberately restricted JSON-Schema subset, so the implementation was narrowed to the provider-proven request contract instead of preserving unsupported schema keywords. Live Doctavian probing has now isolated the remaining issue above the document layer: bearer-only, API-key-only, bearer+API-key, caller-profile/membership and template-upload calls all fail at the demo authorization boundary, so the project keeps that sponsor claim gated instead of treating OAuth issuance alone as proof.
 
 ## Accomplishments
 
@@ -100,12 +100,13 @@ Provider contracts also differ materially. Doctavian's hackathon API requires bo
 - The real Nutrient extraction returned five grounded fields and the DWS Viewer session succeeded.
 - The real Foxit MCP reversible PDF smoke passed.
 - The real Foxit eSign human-signature round trip reached authoritative `EXECUTED` state with a recorded signer action.
+- Doctavian OAuth token issuance succeeded, and the remaining demo authorization failure has been reproduced without committing or logging provider credentials.
 
 ## Current live verification
 
 **PASS:** Groq bounded reviewer, Nutrient Data Extraction, Nutrient DWS Viewer, Foxit PDF Services MCP, Foxit direct eSign, real human Foxit signature, authoritative Foxit completion.
 
-**BLOCKED:** Doctavian live generation only. The hackathon API key is provisioned; the remaining external dependency is the Microsoft OAuth bearer token generated through the supplied Postman collection.
+**BLOCKED:** Doctavian live generation only. Microsoft OAuth token issuance succeeded, but the Doctavian demo API currently returns `401 AUTHORIZATION_ERROR` at its caller authorization boundary before document processing. Sponsor-side caller/team authorization or an additional demo caller context must be resolved before the real generation smoke can pass.
 
 This distinction is intentional: the architecture and Doctavian integration exist, but the final canonical three-sponsor chain will not be described as fully live until the real Doctavian generation/download smoke succeeds.
 
@@ -115,7 +116,7 @@ Agent safety is easier to reason about when authority is moved out of the prompt
 
 ## What's next
 
-Complete the supplied Doctavian Postman collection's Microsoft OAuth flow, run the real Doctavian template/data/generation/download smoke, then record the 2–4 minute end-to-end sponsor demo. The final Devpost submission also requires a public YouTube/Vimeo demo URL and a downloadable backup link to the original MP4. After those deliverables exist, opt into the Nutrient, Doctavian, and Foxit sponsor tracks and submit the project before the hackathon deadline.
+Have Doctavian confirm/correct authorization of the Microsoft identity for the provisioned Team Tomi demo account, or provide the missing demo caller context if one exists. Then obtain a fresh OAuth token if required and rerun the real Doctavian template/data/generation/download smoke. After that succeeds, record the 2–4 minute end-to-end sponsor demo. The final Devpost submission also requires a public YouTube/Vimeo demo URL and a downloadable backup link to the original MP4. After those deliverables exist, opt into the Nutrient, Doctavian, and Foxit sponsor tracks and submit the project before the hackathon deadline.
 
 For a post-hackathon product, the next steps would be configurable policy packs for accounts-payable teams, ERP/vendor-master integrations, independent callback workflows, durable transactional storage, authenticated multi-user access, and externally anchored audit evidence.
 
