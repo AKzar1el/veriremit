@@ -28,7 +28,13 @@ jobs:
           openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 -out /tmp/veriremit-live-private.pem >/dev/null 2>&1
           openssl pkey -in /tmp/veriremit-live-private.pem -pubout -outform DER \
             | base64 -w0 > /tmp/veriremit-live-public.b64
-          echo "VERIREMIT_LIVE_PUBLIC_KEY=$(cat /tmp/veriremit-live-public.b64)"
+      - name: Upload one-time public key
+        uses: actions/upload-artifact@v4
+        with:
+          name: veriremit-live-public-key
+          path: /tmp/veriremit-live-public.b64
+          if-no-files-found: error
+          retention-days: 1
       - name: Wait for encrypted credentials
         run: |
           set -e
