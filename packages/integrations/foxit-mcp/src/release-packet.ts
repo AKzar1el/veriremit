@@ -10,8 +10,14 @@ export interface ReleasePacketEvidenceDocument {
   bytes: Uint8Array;
 }
 
+export interface ReleasePacketPrimaryDocument {
+  filename: string;
+  bytes: Uint8Array;
+}
+
 export interface ReleasePacketInput {
-  releaseHtml: string;
+  releaseHtml?: string;
+  releaseDocument?: ReleasePacketPrimaryDocument;
   evidenceDocuments: ReleasePacketEvidenceDocument[];
   outputPath: string;
   outputFilename?: string;
@@ -133,15 +139,26 @@ export class FoxitReleasePacketGateway implements ReleasePacketGateway {
     }
 
     const outputFilename = input.outputFilename ?? 'payment-release-authorization.pdf';
+    let releaseDocumentId: string;
 
-    const uploadedHtml = await this.invoke('upload_document', {
-      fileContent: textToBase64(input.releaseHtml),
-      fileName: 'payment-release-authorization.html',
-    });
-    const htmlDocumentId = requiredString(uploadedHtml, 'documentId', 'upload_document');
+    if (input.releaseDocument) {
+      const uploadedRelease = await this.invoke('upload_document', {
+        fileContent: bytesToBase64(input.releaseDocument.bytes),
+        fileName: input.releaseDocument.filename,
+      });
+      releaseDocumentId = requiredString(uploadedRelease, 'documentId', 'upload_document');
+    } else if (typeof input.releaseHtml === 'string' && input.releaseHtml.length > 0) {
+      const uploadedHtml = await this.invoke('upload_document', {
+        fileContent: textToBase64(input.releaseHtml),
+        fileName: 'payment-release-authorization.html',
+      });
+      const htmlDocumentId = requiredString(uploadedHtml, 'documentId', 'upload_document');
 
-    const converted = await this.invoke('pdf_from_html', { documentId: htmlDocumentId });
-    const releaseDocumentId = requiredString(converted, 'resultDocumentId', 'pdf_from_html');
+      const converted = await this.invoke('pdf_from_html', { documentId: htmlDocumentId });
+      releaseDocumentId = requiredString(converted, 'resultDocumentId', 'pdf_from_html');
+    } else {
+      throw new Error('A release HTML document or generated release PDF is required.');
+    }
 
     const evidenceDocumentIds: string[] = [];
     for (const evidence of input.evidenceDocuments) {
