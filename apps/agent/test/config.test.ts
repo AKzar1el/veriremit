@@ -30,6 +30,7 @@ test('agent config keeps provider credentials optional in fixture mode and never
     VERIREMIT_SIGNER_EMAIL: 'reviewer@example.com',
     GROQ_API_KEY: 'gsk-test-value',
     DOCTAVIAN_API_KEY: 'doctavian-test-value',
+    DOCTAVIAN_ACCESS_TOKEN: 'doctavian-bearer-value',
     DOCTAVIAN_API_BASE_URL: 'https://demo.api.doctavian.com',
   });
   assert.equal(config.nutrientApiKey, ' nutrient-key-with-spaces ');
@@ -38,6 +39,7 @@ test('agent config keeps provider credentials optional in fixture mode and never
   assert.equal(config.signerEmail, 'reviewer@example.com');
   assert.equal(config.groqApiKey, 'gsk-test-value');
   assert.equal(config.doctavianApiKey, 'doctavian-test-value');
+  assert.equal(config.doctavianAccessToken, 'doctavian-bearer-value');
   assert.equal(config.doctavianApiBaseUrl, 'https://demo.api.doctavian.com');
 });
 
