@@ -25,7 +25,7 @@ function groundedResponse() {
   );
 }
 
-test('posts Nutrient schema extraction using the current instructions wrapper without leaking the API key', async () => {
+test('posts Nutrient schema extraction using the live-proven instructions wrapper and supported schema keywords only', async () => {
   const module = await loadClient();
   assert.equal(typeof module.NutrientExtractionClient, 'function');
 
@@ -55,42 +55,38 @@ test('posts Nutrient schema extraction using the current instructions wrapper wi
   assert.equal(typeof instructionsPart, 'string');
   const instructions = JSON.parse(instructionsPart as string);
   assert.equal(instructions.schema.type, 'object');
-  assert.equal(instructions.schema.additionalProperties, false);
+  assert.equal('additionalProperties' in instructions.schema, false);
   assert.equal(instructions.schema.properties.iban.type, 'string');
+  assert.ok(instructions.schema.required.includes('iban'));
   assert.equal(form.get('schema'), null);
   assert.equal(JSON.stringify(result).includes('secret-nutrient-key'), false);
 });
 
-test('retries once with the documented direct schema field when Nutrient rejects the instructions shape', async () => {
+test('does not retry malformed Nutrient requests with an alternate envelope', async () => {
   const module = await loadClient();
-  const calls: RequestInit[] = [];
+  let calls = 0;
   const client = new (module.NutrientExtractionClient as new (config: unknown) => {
     extract(input: unknown): Promise<unknown>;
   })({
     apiKey: 'secret',
-    fetchImpl: async (_input: string | URL | Request, init?: RequestInit) => {
-      calls.push(init ?? {});
-      return calls.length === 1
-        ? new Response('unsupported request shape', { status: 400 })
-        : groundedResponse();
+    fetchImpl: async () => {
+      calls += 1;
+      return new Response('malformed request', { status: 400 });
     },
   });
 
-  await client.extract({
-    filename: 'invoice.pdf',
-    bytes: new Uint8Array([1, 2, 3]),
-    kind: 'current_invoice',
-  });
-  assert.equal(calls.length, 2);
-  const first = calls[0]?.body as FormData;
-  const second = calls[1]?.body as FormData;
-  assert.equal(typeof first.get('instructions'), 'string');
-  assert.equal(first.get('schema'), null);
-  assert.equal(second.get('instructions'), null);
-  assert.equal(typeof second.get('schema'), 'string');
+  await assert.rejects(
+    () => client.extract({
+      filename: 'invoice.pdf',
+      bytes: new Uint8Array([1, 2, 3]),
+      kind: 'current_invoice',
+    }),
+    /status 400/i,
+  );
+  assert.equal(calls, 1);
 });
 
-test('turns non-shape provider failures into a credential-safe typed provider error without retrying', async () => {
+test('turns provider failures into a credential-safe typed provider error without retrying', async () => {
   const module = await loadClient();
   assert.equal(typeof module.NutrientExtractionClient, 'function');
   assert.equal(typeof module.NutrientProviderError, 'function');
