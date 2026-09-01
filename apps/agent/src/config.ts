@@ -14,6 +14,7 @@ export interface AgentConfig {
   foxitEsignHost?: string;
   groqApiKey?: string;
   doctavianApiKey?: string;
+  doctavianAccessToken?: string;
   doctavianApiBaseUrl?: string;
   signerEmail?: string;
   publicBaseUrl: string;
@@ -60,6 +61,7 @@ export function loadAgentConfig(
   const foxitEsignHost = optional(env, 'FOXIT_ESIGN_HOST');
   const groqApiKey = optional(env, 'GROQ_API_KEY');
   const doctavianApiKey = optional(env, 'DOCTAVIAN_API_KEY');
+  const doctavianAccessToken = optional(env, 'DOCTAVIAN_ACCESS_TOKEN');
   const doctavianApiBaseUrl = optional(env, 'DOCTAVIAN_API_BASE_URL');
   const signerEmail = optional(env, 'VERIREMIT_SIGNER_EMAIL');
   const webOrigin = optional(env, 'VERIREMIT_WEB_ORIGIN');
@@ -72,6 +74,7 @@ export function loadAgentConfig(
   if (foxitEsignHost) config.foxitEsignHost = foxitEsignHost;
   if (groqApiKey) config.groqApiKey = groqApiKey;
   if (doctavianApiKey) config.doctavianApiKey = doctavianApiKey;
+  if (doctavianAccessToken) config.doctavianAccessToken = doctavianAccessToken;
   if (doctavianApiBaseUrl) config.doctavianApiBaseUrl = doctavianApiBaseUrl;
   if (signerEmail) config.signerEmail = signerEmail;
   if (webOrigin) config.webOrigin = webOrigin;
