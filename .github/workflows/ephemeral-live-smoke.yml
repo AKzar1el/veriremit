@@ -59,26 +59,12 @@ jobs:
             -pkeyopt rsa_padding_mode:oaep \
             -pkeyopt rsa_oaep_md:sha256
           chmod 600 .env.local
-      - name: Run isolated non-destructive live provider smokes
-        run: |
-          set +e
-          npm run smoke:groq
-          groq_status=$?
-          node --env-file-if-exists=.env.local --experimental-strip-types scripts/diagnose-nutrient-live.ts
-          nutrient_status=$?
-          npm run smoke:foxit:mcp
-          foxit_status=$?
-          set -e
-          echo "Groq smoke exit: ${groq_status}"
-          echo "Nutrient diagnostic exit: ${nutrient_status}"
-          echo "Foxit MCP smoke exit: ${foxit_status}"
-          if [ "$groq_status" -ne 0 ] || [ "$nutrient_status" -ne 0 ] || [ "$foxit_status" -ne 0 ]; then
-            exit 1
-          fi
+      - name: Run live Nutrient extraction and Viewer smoke
+        run: npm run smoke:nutrient
       - name: Destroy ephemeral credentials
         if: always()
         run: |
           rm -f .env.local /tmp/veriremit-live-private.pem /tmp/veriremit-live-public.b64 \
             /tmp/veriremit-live-cipher.b64 /tmp/veriremit-live-cipher.bin
 
-# Temporary contract-validation workflow; remove after the live smoke pass.
+# Temporary credential-validation workflow; remove after the live smoke pass.
