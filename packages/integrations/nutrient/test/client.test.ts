@@ -5,30 +5,34 @@ async function loadClient() {
   return import('../src/client.ts').catch(() => ({} as Record<string, unknown>));
 }
 
-test('posts the current schema extraction request without leaking the API key into the result', async () => {
+function groundedResponse() {
+  return new Response(
+    JSON.stringify({
+      status: 200,
+      output: {
+        data: { iban: 'DE72 5001 0517 5407' },
+        metadata: {
+          iban: {
+            bbox: { x: 72, y: 330, width: 258, height: 20 },
+            confidence: 0.98,
+            pageIndex: 0,
+            pageNumber: 1,
+          },
+        },
+      },
+    }),
+    { status: 200, headers: { 'content-type': 'application/json' } },
+  );
+}
+
+test('posts Nutrient schema extraction using the current instructions wrapper without leaking the API key', async () => {
   const module = await loadClient();
   assert.equal(typeof module.NutrientExtractionClient, 'function');
 
   const calls: Array<{ url: string; init?: RequestInit }> = [];
   const fetchImpl = async (input: string | URL | Request, init?: RequestInit) => {
     calls.push({ url: String(input), init });
-    return new Response(
-      JSON.stringify({
-        status: 200,
-        output: {
-          data: { iban: 'DE72 5001 0517 5407' },
-          metadata: {
-            iban: {
-              bbox: { x: 72, y: 330, width: 258, height: 20 },
-              confidence: 0.98,
-              pageIndex: 0,
-              pageNumber: 1,
-            },
-          },
-        },
-      }),
-      { status: 200, headers: { 'content-type': 'application/json' } },
-    );
+    return groundedResponse();
   };
 
   const client = new (module.NutrientExtractionClient as new (config: unknown) => {
@@ -47,26 +51,59 @@ test('posts the current schema extraction request without leaking the API key in
   assert.ok(calls[0]?.init?.body instanceof FormData);
   const form = calls[0]?.init?.body as FormData;
   assert.ok(form.get('file') instanceof Blob);
-  const schemaPart = form.get('schema');
-  assert.equal(typeof schemaPart, 'string');
-  const schema = JSON.parse(schemaPart as string);
-  assert.equal(schema.type, 'object');
-  assert.equal(schema.additionalProperties, false);
-  assert.equal(schema.properties.iban.type, 'string');
-  assert.equal(form.get('instructions'), null);
+  const instructionsPart = form.get('instructions');
+  assert.equal(typeof instructionsPart, 'string');
+  const instructions = JSON.parse(instructionsPart as string);
+  assert.equal(instructions.schema.type, 'object');
+  assert.equal(instructions.schema.additionalProperties, false);
+  assert.equal(instructions.schema.properties.iban.type, 'string');
+  assert.equal(form.get('schema'), null);
   assert.equal(JSON.stringify(result).includes('secret-nutrient-key'), false);
 });
 
-test('turns a non-2xx response into a credential-safe typed provider error', async () => {
+test('retries once with the documented direct schema field when Nutrient rejects the instructions shape', async () => {
+  const module = await loadClient();
+  const calls: RequestInit[] = [];
+  const client = new (module.NutrientExtractionClient as new (config: unknown) => {
+    extract(input: unknown): Promise<unknown>;
+  })({
+    apiKey: 'secret',
+    fetchImpl: async (_input: string | URL | Request, init?: RequestInit) => {
+      calls.push(init ?? {});
+      return calls.length === 1
+        ? new Response('unsupported request shape', { status: 400 })
+        : groundedResponse();
+    },
+  });
+
+  await client.extract({
+    filename: 'invoice.pdf',
+    bytes: new Uint8Array([1, 2, 3]),
+    kind: 'current_invoice',
+  });
+  assert.equal(calls.length, 2);
+  const first = calls[0]?.body as FormData;
+  const second = calls[1]?.body as FormData;
+  assert.equal(typeof first.get('instructions'), 'string');
+  assert.equal(first.get('schema'), null);
+  assert.equal(second.get('instructions'), null);
+  assert.equal(typeof second.get('schema'), 'string');
+});
+
+test('turns non-shape provider failures into a credential-safe typed provider error without retrying', async () => {
   const module = await loadClient();
   assert.equal(typeof module.NutrientExtractionClient, 'function');
   assert.equal(typeof module.NutrientProviderError, 'function');
+  let calls = 0;
 
   const client = new (module.NutrientExtractionClient as new (config: unknown) => {
     extract(input: unknown): Promise<unknown>;
   })({
     apiKey: 'secret-that-must-not-leak',
-    fetchImpl: async () => new Response('upstream rejected Authorization: Bearer secret-that-must-not-leak', { status: 401 }),
+    fetchImpl: async () => {
+      calls += 1;
+      return new Response('upstream rejected Authorization: Bearer secret-that-must-not-leak', { status: 401 });
+    },
   });
 
   await assert.rejects(
@@ -82,6 +119,7 @@ test('turns a non-2xx response into a credential-safe typed provider error', asy
       return true;
     },
   );
+  assert.equal(calls, 1);
 });
 
 test('bounds Nutrient extraction requests with an abort signal', async () => {
@@ -95,10 +133,7 @@ test('bounds Nutrient extraction requests with an abort signal', async () => {
     requestTimeoutMs: 50,
     fetchImpl: async (_input: string | URL | Request, init?: RequestInit) => {
       signal = init?.signal;
-      return new Response(JSON.stringify({ status: 200, output: { data: { iban: 'DE72' }, metadata: {} } }), {
-        status: 200,
-        headers: { 'content-type': 'application/json' },
-      });
+      return groundedResponse();
     },
   });
   await client.extract({ filename: 'invoice.pdf', bytes: new Uint8Array([1]), kind: 'current_invoice' });
