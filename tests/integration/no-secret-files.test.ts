@@ -13,24 +13,44 @@ test('secret scanner detects high-risk token families without returning the cred
   const fakeOpenAi = ['sk', 'proj', 'abcdefghijklmnopqrstuvwxyz0123456789'].join('-');
   const fakeGithub = ['github', 'pat', '11FAKEabcdefghijklmnopqrstuv123456789'].join('_');
   const fakeCloudflare = ['cfut', 'FAKEabcdefghijklmnopqrstuv123456789'].join('_');
-  const text = `one\n${fakeOpenAi}\n${fakeGithub}\n${fakeCloudflare}\n`;
+  const fakeGroq = ['gsk', 'FAKEabcdefghijklmnopqrstuvwxyz0123456789'].join('_');
+  const text = [
+    'one',
+    fakeOpenAi,
+    fakeGithub,
+    fakeCloudflare,
+    fakeGroq,
+    'DOCTAVIAN_API_KEY=1234567890abcdef1234567890abcdef',
+    'DOCTAVIAN_ACCESS_TOKEN=eyJhbGciOiJSUzI1NiJ9.fake.payload',
+    '',
+  ].join('\n');
   const findings = scan(text);
 
   assert.deepEqual(findings.map((finding) => finding.type).sort(), [
     'cloudflare-api-token',
+    'doctavian-access-token',
+    'doctavian-api-key',
     'github-fine-grained-token',
+    'groq-api-key',
     'openai-project-key',
   ]);
-  assert.deepEqual(findings.map((finding) => finding.line).sort((a, b) => a - b), [2, 3, 4]);
+  assert.deepEqual(findings.map((finding) => finding.line).sort((a, b) => a - b), [2, 3, 4, 5, 6, 7]);
   assert.equal(findings.some((finding) => 'value' in finding), false);
   assert.equal(JSON.stringify(findings).includes(fakeOpenAi), false);
+  assert.equal(JSON.stringify(findings).includes(fakeGroq), false);
 });
 
 test('secret scanner ignores environment variable placeholders', async () => {
   const module = await loadScanner();
   assert.equal(typeof module.scanTextForSecrets, 'function');
   const scan = module.scanTextForSecrets as (text: string) => unknown[];
-  assert.deepEqual(scan('OPENAI_API_KEY=your-key-here\nFOXIT_CLIENT_SECRET=replace-me\n'), []);
+  assert.deepEqual(scan([
+    'OPENAI_API_KEY=your-key-here',
+    'FOXIT_CLIENT_SECRET=replace-me',
+    'GROQ_API_KEY=',
+    'DOCTAVIAN_API_KEY=',
+    'DOCTAVIAN_ACCESS_TOKEN=',
+  ].join('\n')), []);
 });
 
 test('Foxit eSign smoke output never prints raw provider identifiers or signing URLs', async () => {
