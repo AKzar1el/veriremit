@@ -1,0 +1,65 @@
+name: Ephemeral live provider smoke
+
+on:
+  push:
+    paths:
+      - '.github/workflows/ephemeral-live-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22.16.0'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Generate one-time encryption key
+        run: |
+          umask 077
+          openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 -out /tmp/veriremit-live-private.pem >/dev/null 2>&1
+          openssl pkey -in /tmp/veriremit-live-private.pem -pubout -outform DER \
+            | base64 -w0 > /tmp/veriremit-live-public.b64
+          echo "VERIREMIT_LIVE_PUBLIC_KEY=$(cat /tmp/veriremit-live-public.b64)"
+      - name: Wait for encrypted credentials
+        run: |
+          set -e
+          found=0
+          for attempt in $(seq 1 90); do
+            git fetch -q origin main
+            if git show origin/main:.github/live-smoke-secrets.b64 > /tmp/veriremit-live-cipher.b64 2>/dev/null; then
+              found=1
+              break
+            fi
+            sleep 3
+          done
+          if [ "$found" -ne 1 ]; then
+            echo "Encrypted live-smoke credential blob was not provided in time." >&2
+            exit 1
+          fi
+          base64 -d /tmp/veriremit-live-cipher.b64 > /tmp/veriremit-live-cipher.bin
+          openssl pkeyutl -decrypt \
+            -inkey /tmp/veriremit-live-private.pem \
+            -in /tmp/veriremit-live-cipher.bin \
+            -out .env.local \
+            -pkeyopt rsa_padding_mode:oaep \
+            -pkeyopt rsa_oaep_md:sha256
+          chmod 600 .env.local
+      - name: Run non-destructive live provider smokes
+        run: |
+          npm run smoke:groq
+          npm run smoke:nutrient
+          npm run smoke:foxit:mcp
+      - name: Destroy ephemeral credentials
+        if: always()
+        run: |
+          rm -f .env.local /tmp/veriremit-live-private.pem /tmp/veriremit-live-public.b64 \
+            /tmp/veriremit-live-cipher.b64 /tmp/veriremit-live-cipher.bin
