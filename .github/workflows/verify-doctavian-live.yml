@@ -58,7 +58,17 @@ jobs:
             exit 1
           fi
           base64 -d /tmp/doctavian-cipher.b64 > /tmp/doctavian-cipher.bin
-          openssl pkeyutl -decrypt -inkey /tmp/doctavian-private.pem -in /tmp/doctavian-cipher.bin -out .env.local -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256
+          bytes=$(stat -c%s /tmp/doctavian-cipher.bin)
+          if [ "$bytes" -eq 0 ] || [ $((bytes % 512)) -ne 0 ]; then
+            echo 'Encrypted input has an invalid block size.' >&2
+            exit 1
+          fi
+          : > .env.local
+          blocks=$((bytes / 512))
+          for index in $(seq 0 $((blocks - 1))); do
+            dd if=/tmp/doctavian-cipher.bin of=/tmp/doctavian-block.bin bs=512 skip="$index" count=1 status=none
+            openssl pkeyutl -decrypt -inkey /tmp/doctavian-private.pem -in /tmp/doctavian-block.bin -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 >> .env.local
+          done
           chmod 600 .env.local
 
       - name: Run live Doctavian smoke
@@ -67,4 +77,4 @@ jobs:
       - name: Remove temporary material
         if: always()
         shell: bash
-        run: rm -f .env.local /tmp/doctavian-private.pem /tmp/doctavian-public.b64 /tmp/doctavian-cipher.b64 /tmp/doctavian-cipher.bin
+        run: rm -f .env.local /tmp/doctavian-private.pem /tmp/doctavian-public.b64 /tmp/doctavian-cipher.b64 /tmp/doctavian-cipher.bin /tmp/doctavian-block.bin
