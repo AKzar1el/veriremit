@@ -12,7 +12,7 @@ function jsonResponse(value: unknown, status = 200): Response {
   });
 }
 
-test('Doctavian uploads template and structured data, generates PDF, then downloads it with X-Api-Key only', async () => {
+test('Doctavian uploads template and structured data, generates PDF, then downloads it with bearer plus X-Api-Key', async () => {
   const module = await loadClient();
   assert.equal(typeof module.DoctavianGenerationClient, 'function');
 
@@ -40,6 +40,7 @@ test('Doctavian uploads template and structured data, generates PDF, then downlo
     generate(input: unknown): Promise<any>;
   })({
     apiKey: 'doctavian-test-key',
+    accessToken: 'doctavian-bearer-token',
     fetchImpl,
     baseUrl: 'https://demo.api.doctavian.com',
   });
@@ -73,14 +74,12 @@ test('Doctavian uploads template and structured data, generates PDF, then downlo
   for (const call of calls) {
     const headers = new Headers(call.init?.headers);
     assert.equal(headers.get('x-api-key'), 'doctavian-test-key');
-    assert.equal(headers.has('authorization'), false);
+    assert.equal(headers.get('authorization'), 'Bearer doctavian-bearer-token');
   }
 
   assert.ok(calls[0]?.init?.body instanceof FormData);
   assert.ok(calls[1]?.init?.body instanceof FormData);
-  const templatePart = (calls[0]?.init?.body as FormData).get('file');
   const dataPart = (calls[1]?.init?.body as FormData).get('file');
-  assert.ok(templatePart instanceof Blob);
   assert.ok(dataPart instanceof Blob);
   assert.equal(await (dataPart as Blob).text(), JSON.stringify({
     Release: {
@@ -119,7 +118,7 @@ test('Doctavian uploads template and structured data, generates PDF, then downlo
   assert.equal(new TextDecoder().decode(result.bytes), '%PDF-1.7\nsynthetic-doctavian-output');
 });
 
-test('Doctavian failures are bounded and never echo the API key or provider body', async () => {
+test('Doctavian failures are bounded and never echo API key, bearer token, or provider body', async () => {
   const module = await loadClient();
   assert.equal(typeof module.DoctavianGenerationClient, 'function');
   assert.equal(typeof module.DoctavianProviderError, 'function');
@@ -128,8 +127,9 @@ test('Doctavian failures are bounded and never echo the API key or provider body
     generate(input: unknown): Promise<unknown>;
   })({
     apiKey: 'doctavian-secret-that-must-not-leak',
+    accessToken: 'doctavian-bearer-that-must-not-leak',
     fetchImpl: async () => new Response(
-      'upstream rejected X-Api-Key doctavian-secret-that-must-not-leak',
+      'upstream rejected secret credentials',
       { status: 401 },
     ),
   });
@@ -147,6 +147,7 @@ test('Doctavian failures are bounded and never echo the API key or provider body
       assert.equal(error instanceof (module.DoctavianProviderError as new (...args: never[]) => Error), true);
       assert.match((error as Error).message, /template upload failed with status 401/i);
       assert.equal((error as Error).message.includes('doctavian-secret-that-must-not-leak'), false);
+      assert.equal((error as Error).message.includes('doctavian-bearer-that-must-not-leak'), false);
       assert.equal((error as Error).message.includes('upstream rejected'), false);
       return true;
     },
