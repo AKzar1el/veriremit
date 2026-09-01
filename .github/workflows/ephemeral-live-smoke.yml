@@ -59,8 +59,8 @@ jobs:
             -pkeyopt rsa_padding_mode:oaep \
             -pkeyopt rsa_oaep_md:sha256
           chmod 600 .env.local
-      - name: Run live Nutrient extraction and Viewer smoke
-        run: npm run smoke:nutrient
+      - name: Create one real Foxit developer eSign envelope
+        run: npm run smoke:foxit:esign
       - name: Destroy ephemeral credentials
         if: always()
         run: |
