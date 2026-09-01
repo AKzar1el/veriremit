@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { basename, isAbsolute } from 'node:path';
 import test from 'node:test';
 
 async function loadReleasePacket() {
@@ -16,6 +18,7 @@ test('prepares and downloads a release packet through the four reversible Foxit 
   assert.equal(typeof module.FoxitReleasePacketGateway, 'function');
 
   const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
+  const uploadSnapshots: Array<{ filename: string; bytes: Uint8Array }> = [];
   const responses = [
     textResult({ success: true, documentId: 'html-doc' }),
     textResult({ success: true, resultDocumentId: 'release-pdf' }),
@@ -29,6 +32,14 @@ test('prepares and downloads a release packet through the four reversible Foxit 
   })({
     async callToolResult(name: string, args: Record<string, unknown>) {
       calls.push({ name, args });
+      if (name === 'upload_document') {
+        assert.equal(typeof args.filePath, 'string');
+        assert.equal(isAbsolute(args.filePath as string), true);
+        uploadSnapshots.push({
+          filename: basename(args.filePath as string),
+          bytes: new Uint8Array(await readFile(args.filePath as string)),
+        });
+      }
       return responses[calls.length - 1];
     },
   });
@@ -50,8 +61,10 @@ test('prepares and downloads a release packet through the four reversible Foxit 
     'download_document',
   ]);
   assert.equal(calls.some((call) => /sign|esign/i.test(call.name)), false);
-  assert.equal(calls[0]?.args.fileName, 'payment-release-authorization.html');
-  assert.equal(typeof calls[0]?.args.fileContent, 'string');
+  assert.equal(uploadSnapshots[0]?.filename, 'payment-release-authorization.html');
+  assert.equal(new TextDecoder().decode(uploadSnapshots[0]?.bytes), '<h1>Payment Release Authorization</h1>');
+  assert.match(uploadSnapshots[1]?.filename ?? '', /verification-record\.pdf$/);
+  assert.deepEqual([...uploadSnapshots[1]!.bytes], [37, 80, 68, 70]);
   assert.deepEqual(calls[1]?.args, { documentId: 'html-doc' });
   assert.deepEqual(calls[3]?.args, {
     documents: [{ documentId: 'release-pdf' }, { documentId: 'evidence-pdf' }],
