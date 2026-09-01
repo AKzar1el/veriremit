@@ -26,6 +26,7 @@ export interface LiveProviderConfig {
   foxitClientId: string;
   foxitClientSecret: string;
   doctavianApiKey: string;
+  doctavianAccessToken: string;
   groqApiKey: string;
   signerEmail: string;
 }
@@ -111,6 +112,7 @@ export function assertLiveProviderConfig(config: Partial<AgentConfig>): LiveProv
     ['FOXIT_CLIENT_ID', config.foxitClientId],
     ['FOXIT_CLIENT_SECRET', config.foxitClientSecret],
     ['DOCTAVIAN_API_KEY', config.doctavianApiKey],
+    ['DOCTAVIAN_ACCESS_TOKEN', config.doctavianAccessToken],
     ['GROQ_API_KEY', config.groqApiKey],
     ['VERIREMIT_SIGNER_EMAIL', config.signerEmail],
   ] as const;
@@ -124,6 +126,7 @@ export function assertLiveProviderConfig(config: Partial<AgentConfig>): LiveProv
     foxitClientId: config.foxitClientId!,
     foxitClientSecret: config.foxitClientSecret!,
     doctavianApiKey: config.doctavianApiKey!,
+    doctavianAccessToken: config.doctavianAccessToken!,
     groqApiKey: config.groqApiKey!,
     signerEmail: config.signerEmail!,
   };
@@ -150,6 +153,7 @@ async function createDefaultLiveProviders(config: AgentConfig): Promise<LiveRunt
   const foxitReleaseGateway = new FoxitReleasePacketGateway(mcp);
   const doctavian = new DoctavianGenerationClient({
     apiKey: credentials.doctavianApiKey,
+    accessToken: credentials.doctavianAccessToken,
     ...(config.doctavianApiBaseUrl ? { baseUrl: config.doctavianApiBaseUrl } : {}),
   });
 
