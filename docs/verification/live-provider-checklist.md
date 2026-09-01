@@ -11,7 +11,7 @@ This checklist separates implemented provider adapters from live sponsor verific
 | Groq bounded reviewer | Execute the real four-tool reviewer with `openai/gpt-oss-120b` through Groq's OpenAI-compatible endpoint | **PASS** | Isolated live smoke succeeded against the real Groq-backed reviewer; model output and credential were intentionally not printed |
 | Nutrient Data Extraction | Extract the synthetic vendor-master PDF and return grounded `iban` and `trusted_phone` facts with page coordinates/confidence | **PASS** | Final live smoke extracted 5 grounded fields from the synthetic source packet |
 | Nutrient DWS Viewer | Upload the same synthetic document and create a short-lived read-only viewer session | **PASS** | Final live smoke completed the DWS upload and created the scoped read-only Viewer session; document/session identifiers were intentionally not printed |
-| Doctavian | Upload the deterministic DOCX template + structured release JSON, generate a PDF, and download it | **BLOCKED** | Microsoft OAuth token acquisition succeeded, but the demo API returns `401 AUTHORIZATION_ERROR` before document handling, including on the caller profile/membership endpoint; sponsor-side caller/team authorization must be clarified or corrected |
+| Doctavian | Upload the deterministic DOCX template + structured release JSON, generate a PDF, and download it | **PENDING LIVE GENERATION** | Microsoft OAuth and caller/account linkage are now verified: `/v1/common/user/get` returned 200 for the active provisioned account. The canonical template/data/generate/download chain still needs one clean uninterrupted run with a fresh bearer token |
 | Foxit PDF Services via official MCP | Connect to the stdio MCP server, keep signing outside MCP, and complete a reversible real PDF operation | **PASS** | Live smoke connected to the real Foxit MCP and completed a real HTML-to-PDF conversion/download; the project-level static agent allow-list remains `upload_document`, `pdf_from_html`, `pdf_merge`, `download_document` |
 | Foxit eSign direct API | Create a real envelope for the configured human signer, complete the signature, and verify authoritative completion through the API | **PASS** | Real developer-test envelope was created and signed; Foxit's authoritative lookup returned `EXECUTED` and activity history confirmed a signer action |
 | Real human Foxit signature | Human signer completes the provider-hosted signing step | **PASS** | Authoritative Foxit status verification confirmed the full human-signature round trip, not merely a browser success page |
@@ -56,29 +56,16 @@ Verified on 2026-09-01:
 
 Live contract probing also showed that Nutrient rejects unsupported JSON Schema keywords such as `additionalProperties`. VeriRemit was narrowed to the live-proven `instructions: { schema }` envelope and a provider-compatible schema subset rather than preserving a speculative fallback.
 
-## Doctavian - BLOCKED ON PROVIDER AUTHORIZATION
+## Doctavian - CALLER AUTH VERIFIED; GENERATION PENDING
 
-Doctavian's current generation documentation and supplied hackathon Postman collection require the same two credentials implemented by VeriRemit:
+Doctavian's generation flow requires the same two credentials implemented by VeriRemit:
 
 - `DOCTAVIAN_API_KEY` sent as `X-Api-Key`;
 - `DOCTAVIAN_ACCESS_TOKEN` sent as an OAuth bearer token.
 
-The hackathon API key is provisioned. The supplied Postman collection's Microsoft Authorization Code + PKCE flow also succeeded in issuing an OAuth access token with the expected API scope.
+On 2026-09-01 the supplied Postman collection successfully completed Microsoft OAuth, and a subsequent call to `GET /v1/common/user/get` returned HTTP 200 for the provisioned active Doctavian account. This supersedes the earlier clean-run `401 AUTHORIZATION_ERROR` evidence: the first successful Microsoft portal login completed the caller/account linkage that was missing during those earlier probes. Sponsor support has been told that no account-mapping action is currently required.
 
-A credential-safe server-side verification was then run on 2026-09-01. The token and key were encrypted to a one-time RSA key generated inside the runner; only ciphertext entered Git history, and all decrypted credential material was destroyed before the runner exited.
-
-The live results were:
-
-- `GET /v1/common/limits/get` with bearer only -> `401 AUTHORIZATION_ERROR`;
-- the same endpoint with API key only -> `401 AUTHORIZATION_ERROR`;
-- the same endpoint with bearer + API key -> `401 AUTHORIZATION_ERROR`;
-- `GET /v1/common/user/get`, which the sponsor collection describes as returning the caller's profile and membership details and which uses inherited OAuth, -> `401 AUTHORIZATION_ERROR`;
-- `POST /v1/documents/template/upload` with the documented bearer + API-key headers -> `401 AUTHORIZATION_ERROR`;
-- adding `X-Storage-Type: document-template` did not change the result.
-
-These results occurred while the OAuth token was still inside its validity window. They rule out the deterministic DOCX, multipart body, generation payload, and `X-Storage-Type` as the root cause because authorization fails before document processing begins. The unresolved issue is therefore at the Doctavian demo authorization boundary: the Microsoft caller may not yet be mapped/authorized for the provisioned Team Tomi account, or the demo environment may require an additional sponsor-specific caller context that is not represented in the public generation guide.
-
-Do **not** promote Doctavian to PASS until sponsor support confirms/corrects the caller authorization and this command succeeds against the real API:
+Doctavian is **not** promoted to PASS yet. The remaining proof is a single clean run of the real document path with a fresh bearer token:
 
 ```bash
 npm run smoke:doctavian
@@ -86,17 +73,20 @@ npm run smoke:doctavian
 
 The smoke performs the same provider sequence as the live application:
 
-1. upload `veriremit-release-template.docx`;
-2. upload structured release JSON;
-3. call `/v1/documents/document/generate`;
-4. download the generated PDF.
+1. multipart upload `veriremit-release-template.docx` to `/v1/documents/template/upload`;
+2. multipart upload the structured release JSON file to `/v1/documents/data/upload`;
+3. call `/v1/documents/document/generate` with the returned template/data IDs;
+4. download `/v1/documents/document/{urn}/download` and verify that the returned bytes are a real PDF.
+
+The latest interactive attempts did **not** constitute this proof. They mixed expired bearer tokens with malformed/manual upload attempts, and one scratch script incorrectly changed the structured VeriRemit release data and attempted a raw JSON data upload rather than the multipart file upload required by the provider contract. Those scratch attempts must not be cited as sponsor evidence.
 
 Success evidence still required before promoting Doctavian to PASS:
 
-- the deterministic DOCX template is accepted;
-- structured data drives merge fields, the verification-control repeater, and the control-count calculation;
-- the generated artifact downloads as a real PDF;
-- no API key, bearer token, storage URN, or generated provider identifier is printed or committed.
+- the deterministic VeriRemit DOCX is accepted;
+- the canonical VeriRemit structured release JSON is uploaded as a multipart file and drives the template fields/repeater/calculation;
+- generation returns a document URN;
+- the generated artifact downloads as a non-empty real PDF;
+- no API key, bearer token, storage URN, or generated provider identifier is committed or printed in public verification records.
 
 ## Foxit PDF Services MCP - PASS
 
@@ -155,4 +145,4 @@ plain-language reviewer
 
 ## Credential-blocked behavior
 
-The smoke runners and live-runtime configuration fail closed when required credentials are absent or rejected. Missing configuration errors name only environment variables; provider credentials are not printed. `npm run check:secrets` also scans tracked source for high-risk credential patterns.
+The smoke runners and live-runtime configuration fail closed when required credentials are absent, expired, or rejected. Missing configuration errors name only environment variables; provider credentials are not printed. `npm run check:secrets` also scans tracked source for high-risk credential patterns.
