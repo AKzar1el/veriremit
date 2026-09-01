@@ -1,3 +1,7 @@
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { basename, join } from 'node:path';
+
 export interface FoxitMcpToolClient {
   callToolResult(
     toolName: string,
@@ -49,20 +53,6 @@ export class FoxitMcpError extends Error {
 }
 
 type ToolPayload = Record<string, unknown>;
-
-function bytesToBase64(bytes: Uint8Array): string {
-  let binary = '';
-  const chunkSize = 0x8000;
-  for (let offset = 0; offset < bytes.length; offset += chunkSize) {
-    const chunk = bytes.subarray(offset, Math.min(offset + chunkSize, bytes.length));
-    binary += String.fromCharCode(...chunk);
-  }
-  return btoa(binary);
-}
-
-function textToBase64(value: string): string {
-  return bytesToBase64(new TextEncoder().encode(value));
-}
 
 function asRecord(value: unknown): ToolPayload | undefined {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -121,6 +111,11 @@ function requiredString(payload: ToolPayload, key: string, toolName: string): st
   return value;
 }
 
+function safeFilename(value: string, fallback: string): string {
+  const normalized = basename(value.trim());
+  return normalized && normalized !== '.' && normalized !== '..' ? normalized : fallback;
+}
+
 export class FoxitReleasePacketGateway implements ReleasePacketGateway {
   readonly client: FoxitMcpToolClient;
 
@@ -139,52 +134,62 @@ export class FoxitReleasePacketGateway implements ReleasePacketGateway {
     }
 
     const outputFilename = input.outputFilename ?? 'payment-release-authorization.pdf';
-    let releaseDocumentId: string;
+    const stagingDir = await mkdtemp(join(tmpdir(), 'veriremit-foxit-'));
 
-    if (input.releaseDocument) {
-      const uploadedRelease = await this.invoke('upload_document', {
-        fileContent: bytesToBase64(input.releaseDocument.bytes),
-        fileName: input.releaseDocument.filename,
-      });
-      releaseDocumentId = requiredString(uploadedRelease, 'documentId', 'upload_document');
-    } else if (typeof input.releaseHtml === 'string' && input.releaseHtml.length > 0) {
-      const uploadedHtml = await this.invoke('upload_document', {
-        fileContent: textToBase64(input.releaseHtml),
-        fileName: 'payment-release-authorization.html',
-      });
-      const htmlDocumentId = requiredString(uploadedHtml, 'documentId', 'upload_document');
+    try {
+      let releaseDocumentId: string;
 
-      const converted = await this.invoke('pdf_from_html', { documentId: htmlDocumentId });
-      releaseDocumentId = requiredString(converted, 'resultDocumentId', 'pdf_from_html');
-    } else {
-      throw new Error('A release HTML document or generated release PDF is required.');
+      if (input.releaseDocument) {
+        const releasePath = join(
+          stagingDir,
+          safeFilename(input.releaseDocument.filename, 'payment-release-authorization.pdf'),
+        );
+        await writeFile(releasePath, input.releaseDocument.bytes, { mode: 0o600 });
+        const uploadedRelease = await this.invoke('upload_document', { filePath: releasePath });
+        releaseDocumentId = requiredString(uploadedRelease, 'documentId', 'upload_document');
+      } else if (typeof input.releaseHtml === 'string' && input.releaseHtml.length > 0) {
+        const htmlPath = join(stagingDir, 'payment-release-authorization.html');
+        await writeFile(htmlPath, input.releaseHtml, { encoding: 'utf8', mode: 0o600 });
+        const uploadedHtml = await this.invoke('upload_document', { filePath: htmlPath });
+        const htmlDocumentId = requiredString(uploadedHtml, 'documentId', 'upload_document');
+
+        const converted = await this.invoke('pdf_from_html', { documentId: htmlDocumentId });
+        releaseDocumentId = requiredString(converted, 'resultDocumentId', 'pdf_from_html');
+      } else {
+        throw new Error('A release HTML document or generated release PDF is required.');
+      }
+
+      const evidenceDocumentIds: string[] = [];
+      for (let index = 0; index < input.evidenceDocuments.length; index += 1) {
+        const evidence = input.evidenceDocuments[index]!;
+        const evidencePath = join(
+          stagingDir,
+          `${index + 1}-${safeFilename(evidence.filename, `evidence-${index + 1}.pdf`)}`,
+        );
+        await writeFile(evidencePath, evidence.bytes, { mode: 0o600 });
+        const uploadedEvidence = await this.invoke('upload_document', { filePath: evidencePath });
+        evidenceDocumentIds.push(requiredString(uploadedEvidence, 'documentId', 'upload_document'));
+      }
+
+      const merged = await this.invoke('pdf_merge', {
+        documents: [releaseDocumentId, ...evidenceDocumentIds].map((documentId) => ({ documentId })),
+      });
+      const mergedDocumentId = requiredString(merged, 'resultDocumentId', 'pdf_merge');
+
+      await this.invoke('download_document', {
+        documentId: mergedDocumentId,
+        outputPath: input.outputPath,
+        filename: outputFilename,
+      });
+
+      return {
+        id: mergedDocumentId,
+        filename: outputFilename,
+        provider: 'foxit',
+        localPath: input.outputPath,
+      };
+    } finally {
+      await rm(stagingDir, { recursive: true, force: true });
     }
-
-    const evidenceDocumentIds: string[] = [];
-    for (const evidence of input.evidenceDocuments) {
-      const uploadedEvidence = await this.invoke('upload_document', {
-        fileContent: bytesToBase64(evidence.bytes),
-        fileName: evidence.filename,
-      });
-      evidenceDocumentIds.push(requiredString(uploadedEvidence, 'documentId', 'upload_document'));
-    }
-
-    const merged = await this.invoke('pdf_merge', {
-      documents: [releaseDocumentId, ...evidenceDocumentIds].map((documentId) => ({ documentId })),
-    });
-    const mergedDocumentId = requiredString(merged, 'resultDocumentId', 'pdf_merge');
-
-    await this.invoke('download_document', {
-      documentId: mergedDocumentId,
-      outputPath: input.outputPath,
-      filename: outputFilename,
-    });
-
-    return {
-      id: mergedDocumentId,
-      filename: outputFilename,
-      provider: 'foxit',
-      localPath: input.outputPath,
-    };
   }
 }
