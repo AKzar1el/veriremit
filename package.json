@@ -24,6 +24,7 @@
     "check:secrets": "node scripts/check-secrets.mjs",
     "verify:offline": "npm run generate:fixtures && npm test && npm run typecheck:core && npm run typecheck:providers && npm run check:secrets",
     "verify": "npm run generate:fixtures && npm test && npm run typecheck && npm run build && npm run check:secrets",
+    "smoke:groq": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/smoke-groq.ts",
     "smoke:nutrient": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/smoke-nutrient.ts",
     "smoke:doctavian": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/smoke-doctavian.ts",
     "smoke:foxit:mcp": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/smoke-foxit-mcp.ts",
