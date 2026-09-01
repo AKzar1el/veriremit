@@ -27,25 +27,24 @@ function shape(value: unknown, depth = 0): unknown {
   return typeof value;
 }
 
+const PROPERTIES = {
+  vendor_id: { type: 'string' },
+  vat_id: { type: 'string' },
+  beneficiary_name: { type: 'string' },
+  iban: { type: 'string' },
+  trusted_phone: { type: 'string' },
+} as const;
+const REQUIRED = ['vendor_id', 'vat_id', 'beneficiary_name', 'iban', 'trusted_phone'] as const;
+
 async function attempt(
   label: string,
   apiKey: string,
   bytes: Uint8Array,
-  mode: 'instructions' | 'schema',
+  schema: Readonly<Record<string, unknown>>,
 ): Promise<boolean> {
-  const schema = {
-    type: 'object',
-    properties: {
-      beneficiary_name: { type: 'string' },
-    },
-  };
   const form = new FormData();
   form.append('file', new Blob([bytes], { type: 'application/pdf' }), 'vendor-master.pdf');
-  if (mode === 'instructions') {
-    form.append('instructions', JSON.stringify({ schema }));
-  } else {
-    form.append('schema', JSON.stringify(schema));
-  }
+  form.append('instructions', JSON.stringify({ schema }));
 
   const response = await fetch('https://api.nutrient.io/extraction/extract', {
     method: 'POST',
@@ -71,9 +70,31 @@ async function attempt(
 async function main(): Promise<void> {
   const apiKey = required('NUTRIENT_API_KEY');
   const bytes = new Uint8Array(await readFile('fixtures/acme-components/vendor-master.pdf'));
-  const instructions = await attempt('instructions/minimal-schema', apiKey, bytes, 'instructions');
-  const schema = await attempt('direct-schema/minimal-schema', apiKey, bytes, 'schema');
-  if (!instructions && !schema) process.exitCode = 2;
+
+  const results = await Promise.all([
+    attempt('full/strict', apiKey, bytes, {
+      type: 'object',
+      additionalProperties: false,
+      properties: PROPERTIES,
+      required: REQUIRED,
+    }),
+    attempt('full/no-additional-properties', apiKey, bytes, {
+      type: 'object',
+      properties: PROPERTIES,
+      required: REQUIRED,
+    }),
+    attempt('full/no-required', apiKey, bytes, {
+      type: 'object',
+      additionalProperties: false,
+      properties: PROPERTIES,
+    }),
+    attempt('full/simple', apiKey, bytes, {
+      type: 'object',
+      properties: PROPERTIES,
+    }),
+  ]);
+
+  if (!results.some(Boolean)) process.exitCode = 2;
 }
 
 main().catch((error: unknown) => {
