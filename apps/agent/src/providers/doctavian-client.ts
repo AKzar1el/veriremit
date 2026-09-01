@@ -23,6 +23,7 @@ export interface DoctavianGeneratedDocument {
 
 export interface DoctavianGenerationClientConfig {
   apiKey: string;
+  accessToken: string;
   baseUrl?: string;
   fetchImpl?: FetchLike;
   requestTimeoutMs?: number;
@@ -76,14 +77,18 @@ function requiredGeneratedUrn(payload: unknown, status: number): string {
 
 export class DoctavianGenerationClient {
   private readonly apiKey: string;
+  private readonly accessToken: string;
   private readonly baseUrl: string;
   private readonly fetchImpl: FetchLike;
   private readonly requestTimeoutMs: number;
 
   constructor(config: DoctavianGenerationClientConfig) {
     const apiKey = config.apiKey.trim();
+    const accessToken = config.accessToken.trim();
     if (!apiKey) throw new Error('Doctavian API key is required.');
+    if (!accessToken) throw new Error('Doctavian bearer access token is required.');
     this.apiKey = apiKey;
+    this.accessToken = accessToken;
     this.baseUrl = normalizeBaseUrl(config.baseUrl ?? DEFAULT_BASE_URL);
     this.fetchImpl = config.fetchImpl ?? fetch;
     this.requestTimeoutMs = config.requestTimeoutMs ?? DEFAULT_TIMEOUT_MS;
@@ -99,6 +104,7 @@ export class DoctavianGenerationClient {
       response = await this.fetchImpl(`${this.baseUrl}${path}`, {
         ...init,
         headers: {
+          Authorization: `Bearer ${this.accessToken}`,
           'X-Api-Key': this.apiKey,
           ...(init.headers ?? {}),
         },
