@@ -1,6 +1,6 @@
-import { unlink } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import {
   FOXIT_ALLOWED_TOOLS,
   createFoxitMcpServer,
@@ -52,7 +52,9 @@ function requiredResultId(payload: Record<string, unknown>, key: string, toolNam
 async function main(): Promise<void> {
   const clientId = requireCredential('FOXIT_CLIENT_ID');
   const clientSecret = requireCredential('FOXIT_CLIENT_SECRET');
-  const outputPath = join(tmpdir(), `veriremit-foxit-smoke-${process.pid}.pdf`);
+  const stagingDir = await mkdtemp(join(tmpdir(), 'veriremit-foxit-smoke-'));
+  const inputPath = resolve(stagingDir, 'veriremit-smoke.html');
+  const outputPath = resolve(stagingDir, 'veriremit-smoke.pdf');
 
   const server = await createFoxitMcpServer({
     clientId,
@@ -82,9 +84,9 @@ async function main(): Promise<void> {
     console.log(`Foxit MCP connected with ${names.length} allow-listed reversible tools.`);
 
     const html = '<!doctype html><html><body><h1>VeriRemit smoke test</h1><p>Synthetic, non-production document.</p></body></html>';
+    await writeFile(inputPath, html, { encoding: 'utf8', mode: 0o600 });
     const uploaded = readToolPayload(await server.callToolResult('upload_document', {
-      fileContent: Buffer.from(html, 'utf8').toString('base64'),
-      fileName: 'veriremit-smoke.html',
+      filePath: inputPath,
     }));
     const htmlDocumentId = requiredResultId(uploaded, 'documentId', 'upload_document');
 
@@ -101,11 +103,15 @@ async function main(): Promise<void> {
     if (downloaded.success !== true) {
       throw new Error('Foxit download_document failed.');
     }
+    const file = await stat(outputPath);
+    if (!file.isFile() || file.size < 5) throw new Error('Foxit downloaded file is missing or empty.');
+    const prefix = new TextDecoder().decode(new Uint8Array(await readFile(outputPath)).subarray(0, 5));
+    if (prefix !== '%PDF-') throw new Error('Foxit downloaded file is not a PDF.');
 
     console.log('Foxit real HTML-to-PDF conversion succeeded.');
   } finally {
     await server.close().catch(() => undefined);
-    await unlink(outputPath).catch(() => undefined);
+    await rm(stagingDir, { recursive: true, force: true });
   }
 }
 
