@@ -32,6 +32,7 @@ export interface ExtractionDocumentInput {
 
 interface ReleasePacketInput {
   releaseHtml: string;
+  releaseData?: Readonly<Record<string, unknown>>;
   evidenceDocuments: Array<{ filename: string; bytes: Uint8Array }>;
   outputPath: string;
   outputFilename?: string;
@@ -42,6 +43,11 @@ interface GeneratedReleaseDocument {
   filename: string;
   provider: 'foxit';
   localPath: string;
+  generation?: {
+    id: string;
+    filename: string;
+    provider: 'doctavian';
+  };
 }
 
 interface ReleasePacketGateway {
@@ -386,6 +392,12 @@ export class CaseService {
       };
       await this.cases.save(next);
 
+      if (generated.generation?.provider === 'doctavian') {
+        ledger = await this.appendAudit(caseId, ledger, 'DOCTAVIAN_DOCUMENT_GENERATED', {
+          documentId: generated.generation.id,
+          filename: generated.generation.filename,
+        });
+      }
       ledger = await this.appendAudit(caseId, ledger, 'FOXIT_MCP_OPERATION_COMPLETED', {
         documentId: generated.id,
         filename: generated.filename,
@@ -492,4 +504,5 @@ export class CaseService {
         },
       };
     });
-  }}
+  }
+}
