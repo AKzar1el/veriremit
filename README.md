@@ -123,6 +123,7 @@ npm run demo:reset
 Live sponsor smokes are intentionally separate:
 
 ```bash
+npm run smoke:groq
 npm run smoke:nutrient
 npm run smoke:doctavian
 npm run smoke:foxit:mcp
@@ -143,9 +144,11 @@ Submission copy, judging coverage, and the exact 2-4 minute recording flow live 
 
 The deterministic workflow, fixture demo, Groq reviewer provider, Nutrient/Foxit adapters, Doctavian generation adapter/template/composition, UI, CI safeguards, and deployment packaging are implemented. The current clean-run baseline is **123/123 tests passing**, 0 high-or-greater production dependency vulnerabilities, strict core/provider/app typechecks, a production Vite build, a clean repository secret scan, **2/2 Chromium end-to-end tests passing with retries disabled**, a successful `Dockerfile.agent` build, and a fixture-mode container startup that returns HTTP 200 from `/health`.
 
-Live Nutrient, Doctavian, Foxit and Groq calls remain evidence-gated until the credential-gated live checks succeed. The real Foxit human signature is also still required before the submission video can truthfully show the complete sponsor flow. A public hosted agent is optional for the current sponsor submission criteria and is not represented as verified.
+Live provider evidence now exists for the real **Groq bounded reviewer**, **Nutrient grounded extraction + DWS Viewer**, **Foxit PDF Services MCP**, and the complete **Foxit direct eSign human-signature round trip**. The Foxit developer-test envelope reached authoritative `EXECUTED` state and provider activity history independently recorded the signer action. The only remaining sponsor API proof blocker is **Doctavian**: its hackathon API key is provisioned, but the required Microsoft OAuth bearer token still has to be generated through the supplied Postman OAuth flow before `npm run smoke:doctavian` can prove the real template/data/generation/download sequence.
 
-VeriRemit is intentionally **hackathon-production-shaped, not represented as regulated-production-ready**. The current live runtime is designed for one controlled long-lived instance. Dependency resolution is locked and CI/Docker use `npm ci`; a real multi-user production deployment still needs upstream authentication/rate limiting, transactional durable storage with cross-instance idempotency, and an externally anchored or signed audit store.
+Until that Doctavian smoke passes, VeriRemit does **not** claim that the canonical Nutrient -> Doctavian -> Foxit chain has completed end-to-end against every live sponsor provider. The final hackathon demo video is intentionally gated on that last proof.
+
+A public hosted agent is optional for the current sponsor submission criteria and is not represented as verified. VeriRemit is intentionally **hackathon-production-shaped, not represented as regulated-production-ready**. The current live runtime is designed for one controlled long-lived instance. Dependency resolution is locked and CI/Docker use `npm ci`; a real multi-user production deployment still needs upstream authentication/rate limiting, transactional durable storage with cross-instance idempotency, and an externally anchored or signed audit store.
 
 ## License
 
