@@ -2,7 +2,7 @@
 
 Target length: **2:55-3:10**. Screen recording plus narration; no face camera required.
 
-> Recording gate: record the sponsor submission only in live-provider mode after the real Groq reviewer, Nutrient extraction + Viewer, Doctavian generation, Foxit MCP, and Foxit eSign checks pass. The human Foxit signature must be completed for real. Do not record fixture mode and describe it as live sponsor behavior.
+> Recording gate: the real Groq reviewer, Nutrient extraction + Viewer, Foxit MCP, and Foxit eSign human-signature checks are already verified. Record the canonical sponsor submission only after the remaining Doctavian live generation smoke also passes. The public demo itself should still complete a fresh human Foxit signature end to end. Do not record fixture mode and describe it as live sponsor behavior.
 
 ## 0:00-0:15 - Problem and plain prompt
 
@@ -56,7 +56,7 @@ Target length: **2:55-3:10**. Screen recording plus narration; no face camera re
 **Screen**
 - Ask the bounded agent to continue and prepare the release.
 - Show `human approved` transitioning to release preparation.
-- If available in the UI/audit panel, highlight the Doctavian generation event or generated authorization.
+- Highlight the Doctavian generation event or generated authorization in the UI/audit panel.
 - Briefly show the generated authorization PDF.
 
 **Narration**
@@ -111,11 +111,13 @@ Target length: **2:55-3:10**. Screen recording plus narration; no face camera re
 Before recording:
 
 - reset the demo state with `npm run demo:reset`;
-- confirm all credential-gated live smokes have passed;
-- confirm the Doctavian OAuth bearer is valid;
+- confirm `npm run smoke:doctavian` passes with the real Microsoft OAuth bearer and provisioned API key;
+- confirm the already-verified Groq, Nutrient, Foxit MCP, and Foxit eSign credentials are still valid for the recording run;
 - use synthetic/fictitious documents only;
 - close tabs or terminals containing credentials;
 - ensure no provider token, document ID, OAuth token, signing URL, or API key is visible;
-- ensure the Foxit signer inbox is available for the live human step;
+- ensure the Foxit signer inbox is available for the fresh live human step;
 - record one uninterrupted end-to-end run if possible;
-- export the final video as MP4 in addition to uploading the public YouTube/Vimeo/Facebook Video version required by Devpost.
+- keep the final cut between 2 and 4 minutes;
+- upload the public demo to YouTube or Vimeo for the Devpost video field;
+- export and retain the original MP4, then upload it to a service that provides the required downloadable backup link for Devpost's submission field.
