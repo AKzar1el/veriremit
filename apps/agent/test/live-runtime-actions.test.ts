@@ -15,7 +15,7 @@ test('live provider bootstrap fails closed with the exact missing credential nam
       publicBaseUrl: 'https://demo.example',
       dataDir: '.data',
     }),
-    /NUTRIENT_API_KEY, NUTRIENT_DWS_VIEWER_API_KEY, FOXIT_CLIENT_ID, FOXIT_CLIENT_SECRET, DOCTAVIAN_API_KEY, GROQ_API_KEY, VERIREMIT_SIGNER_EMAIL/,
+    /NUTRIENT_API_KEY, NUTRIENT_DWS_VIEWER_API_KEY, FOXIT_CLIENT_ID, FOXIT_CLIENT_SECRET, DOCTAVIAN_API_KEY, DOCTAVIAN_ACCESS_TOKEN, GROQ_API_KEY, VERIREMIT_SIGNER_EMAIL/,
   );
 });
 
@@ -102,6 +102,7 @@ test('live actions use injected sponsor gateways through the authoritative case 
         foxitClientId: 'foxit-client-test',
         foxitClientSecret: 'foxit-secret-test',
         doctavianApiKey: 'doctavian-test',
+        doctavianAccessToken: 'doctavian-bearer-test',
         groqApiKey: 'gsk-test',
         signerEmail: 'controller@example.com',
       },
