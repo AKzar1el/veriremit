@@ -18,7 +18,7 @@ test('Doctavian release template is a deterministic DOCX with structured fields,
   const raw = new TextDecoder().decode(first);
   assert.match(raw, /\{!Release\.CaseId\}/);
   assert.match(raw, /\{!Release\.Supplier\}/);
-  assert.match(raw, /&lt;mdoc:repeater name="verification-checks" value="Release\.Checks" variable="check"&gt;/);
+  assert.match(raw, /&lt;mdoc:repeater name=&quot;verification-checks&quot; value=&quot;Release\.Checks&quot; variable=&quot;check&quot;&gt;/);
   assert.match(raw, /#check\.Code#/);
   assert.match(raw, /#check\.Outcome#/);
   assert.match(raw, /\{!\$count\(Release\.Checks\)\}/);
