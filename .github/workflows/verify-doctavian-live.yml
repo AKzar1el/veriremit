@@ -71,8 +71,82 @@ jobs:
           done
           chmod 600 .env.local
 
-      - name: Run live Doctavian smoke
-        run: npm run smoke:doctavian
+      - name: Diagnose live Doctavian auth boundary
+        shell: bash
+        run: |
+          node --env-file-if-exists=.env.local --experimental-strip-types --input-type=module <<'NODE'
+          import { createDoctavianReleaseTemplate } from './apps/agent/src/providers/doctavian-template.ts';
+
+          const required = (name) => {
+            const value = process.env[name]?.trim();
+            if (!value) throw new Error(`Missing ${name}.`);
+            return value;
+          };
+          const baseUrl = (process.env.DOCTAVIAN_API_BASE_URL || 'https://demo.api.doctavian.com').replace(/\/+$/, '');
+          const token = required('DOCTAVIAN_ACCESS_TOKEN');
+          const apiKey = required('DOCTAVIAN_API_KEY');
+          const authHeaders = {
+            Authorization: `Bearer ${token}`,
+            'X-Api-Key': apiKey,
+            Accept: 'application/json',
+          };
+
+          async function safeSummary(label, response, { neverReadBody = false } = {}) {
+            if (neverReadBody) {
+              console.log(`${label}: HTTP ${response.status}; content-type=${response.headers.get('content-type') || 'unknown'}`);
+              return;
+            }
+            const text = await response.text();
+            let summary = '';
+            try {
+              const value = JSON.parse(text);
+              const err = value?.error;
+              summary = JSON.stringify({
+                resultStatus: value?.result?.statusCode,
+                resultMessage: value?.result?.message,
+                errorStatus: err?.statusCode,
+                errorMessage: err?.message,
+                innerCodes: Array.isArray(err?.innerErrors) ? err.innerErrors.map((item) => item?.code).filter(Boolean) : [],
+              });
+            } catch {
+              summary = text ? `non-json-body-length=${text.length}` : 'empty-body';
+            }
+            console.log(`${label}: HTTP ${response.status}; ${summary}`);
+          }
+
+          const limits = await fetch(`${baseUrl}/v1/common/limits/get`, {
+            headers: authHeaders,
+            signal: AbortSignal.timeout(30000),
+          });
+          await safeSummary('common limits with bearer + api key', limits);
+
+          const serviceToken = await fetch(`${baseUrl}/v1/common/service/token`, {
+            method: 'POST',
+            headers: authHeaders,
+            signal: AbortSignal.timeout(30000),
+          });
+          await safeSummary('service token issuance with bearer + api key', serviceToken, { neverReadBody: serviceToken.ok });
+
+          const templateBytes = createDoctavianReleaseTemplate();
+          async function upload(label, extraHeaders = {}) {
+            const form = new FormData();
+            form.append(
+              'file',
+              new Blob([templateBytes], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }),
+              'veriremit-release-template.docx',
+            );
+            const response = await fetch(`${baseUrl}/v1/documents/template/upload`, {
+              method: 'POST',
+              headers: { ...authHeaders, ...extraHeaders },
+              body: form,
+              signal: AbortSignal.timeout(30000),
+            });
+            await safeSummary(label, response);
+          }
+
+          await upload('template upload exact Mission 1 headers');
+          await upload('template upload plus X-Storage-Type', { 'X-Storage-Type': 'document-template' });
+          NODE
 
       - name: Remove temporary material
         if: always()
