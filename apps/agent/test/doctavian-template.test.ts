@@ -12,9 +12,11 @@ const REQUIRED_PACKAGE_PARTS = [
   'word/document.xml',
   'word/_rels/document.xml.rels',
   'word/fontTable.xml',
-  'word/numbering.xml',
   'word/settings.xml',
   'word/styles.xml',
+  'word/webextensions/taskpanes.xml',
+  'word/webextensions/webextension1.xml',
+  'word/webextensions/_rels/taskpanes.xml.rels',
 ] as const;
 
 const REQUIRED_RELEASE_FIELDS = [
@@ -46,14 +48,15 @@ function documentText(documentXml: string): string {
     .join('\n');
 }
 
-test('Doctavian release template has mature-generator package parts and documented merge syntax', async () => {
+test('Doctavian release template preserves the provider-native Maven Word template package', async () => {
   const first = await createDoctavianReleaseTemplate();
   const second = await createDoctavianReleaseTemplate();
   assert.deepEqual(first, second);
   assert.ok(first.byteLength > 0);
   assert.equal(new TextDecoder().decode(first.subarray(0, 2)), 'PK');
 
-  // JSZip is independent of the template implementation and rejects malformed ZIP packages.
+  // JSZip independently rejects malformed ZIP packages and lets us verify the exact
+  // Maven/Doctavian package parts that were present in the sponsor-provided working template.
   const archive = await JSZip.loadAsync(first);
   for (const part of REQUIRED_PACKAGE_PARTS) {
     assert.ok(archive.file(part), `missing required DOCX package part: ${part}`);
@@ -61,31 +64,35 @@ test('Doctavian release template has mature-generator package parts and document
 
   const contentTypes = await archive.file('[Content_Types].xml')?.async('text');
   const packageRelationships = await archive.file('_rels/.rels')?.async('text');
-  const documentRelationships = await archive.file('word/_rels/document.xml.rels')?.async('text');
   const documentXml = await archive.file('word/document.xml')?.async('text');
+  const taskpanesXml = await archive.file('word/webextensions/taskpanes.xml')?.async('text');
+  const webExtensionXml = await archive.file('word/webextensions/webextension1.xml')?.async('text');
   assert.ok(contentTypes);
   assert.ok(packageRelationships);
-  assert.ok(documentRelationships);
   assert.ok(documentXml);
+  assert.ok(taskpanesXml);
+  assert.ok(webExtensionXml);
 
   assert.match(contentTypes, /wordprocessingml\.document\.main\+xml/);
   assert.match(packageRelationships, /relationships\/officeDocument/);
-  assert.match(documentRelationships, /relationships\/styles/);
-  assert.match(documentRelationships, /relationships\/settings/);
+  assert.match(taskpanesXml, /webextensionref/i);
+  // Maven Documents' Word add-in ID is embedded in the official Mission 1 template that
+  // successfully generated a live Doctavian PDF. Preserve it instead of synthesizing DOCX.
+  assert.match(webExtensionXml, /WA200008920/);
 
   const text = documentText(documentXml);
   for (const field of REQUIRED_RELEASE_FIELDS) assert.ok(text.includes(field), `missing merge field: ${field}`);
   assert.ok(text.includes('{!$count(Release.Checks)}'));
   assert.ok(
     text.includes(
-      '<mdoc:repeater name="verification-checks" value="{!Release.Checks}" variable="check" mode="standard">',
+      '<mdoc:repeater name="rptr" value="{!Release.Checks}" variable="item" mode="standard">',
     ),
   );
-  assert.ok(text.includes('{!#check#.Code}'));
-  assert.ok(text.includes('{!#check#.Outcome}'));
-  assert.ok(text.includes('{!#check#.Summary}'));
-  assert.ok(text.includes('</mdoc:repeater name="verification-checks">'));
-  assert.ok(text.includes('Foxit eSign sends this packet to a human signer'));
+  assert.ok(text.includes('{!#item#.Code}'));
+  assert.ok(text.includes('{!#item#.Outcome}'));
+  assert.ok(text.includes('{!#item#.Summary}'));
+  assert.ok(text.includes('</mdoc:repeater name="rptr">'));
+  assert.ok(text.includes('Foxit assembles and routes the packet for human signature'));
 
   assert.doesNotMatch(text, /DTOKEN|DAPIKEY|Authorization:\s*Bearer|X-Api-Key|Bearer\s+[A-Za-z0-9]/i);
 });
