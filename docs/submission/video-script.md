@@ -2,7 +2,7 @@
 
 Target length: **2:55-3:10**. Screen recording plus narration; no face camera required.
 
-> Recording gate: the real Groq reviewer, Nutrient extraction + Viewer, Foxit MCP, and Foxit eSign human-signature checks are already verified. Record the canonical sponsor submission only after the remaining Doctavian live generation smoke also passes. The public demo itself should still complete a fresh human Foxit signature end to end. Do not record fixture mode and describe it as live sponsor behavior.
+> Recording gate: Groq reviewer, Nutrient extraction + Viewer, Doctavian generation/download, Foxit MCP, and the Foxit eSign human-signature round trip are all live-verified. Before recording, run one fresh canonical end-to-end pass from the exact submitted runtime so the video catches any expired short-lived credentials or provider-session drift. Do not record fixture mode and describe it as live sponsor behavior.
 
 ## 0:00-0:15 - Problem and plain prompt
 
@@ -61,7 +61,7 @@ Target length: **2:55-3:10**. Screen recording plus narration; no face camera re
 
 **Narration**
 
-"Only now can document generation run. VeriRemit sends approved structured case data to Doctavian. A deterministic DOCX template uses merge fields, a repeater over the verification controls, and a calculated control count to produce the Payment Release Authorization. The model does not free-write this financial document."
+"Only now can document generation run. VeriRemit sends approved structured case data to Doctavian. A deterministic provider-native DOCX template uses merge fields, a repeater over the verification controls, and a calculated control count to produce the Payment Release Authorization. The model does not free-write this financial document."
 
 ## 1:52-2:17 - Foxit reversible assembly and eSign request
 
@@ -111,7 +111,7 @@ Target length: **2:55-3:10**. Screen recording plus narration; no face camera re
 Before recording:
 
 - reset the demo state with `npm run demo:reset`;
-- confirm `npm run smoke:doctavian` passes with the real Microsoft OAuth bearer and provisioned API key;
+- confirm `npm run smoke:doctavian` passes with a fresh Microsoft OAuth bearer and the provisioned API key;
 - confirm the already-verified Groq, Nutrient, Foxit MCP, and Foxit eSign credentials are still valid for the recording run;
 - use synthetic/fictitious documents only;
 - close tabs or terminals containing credentials;
