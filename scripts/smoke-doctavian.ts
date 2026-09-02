@@ -1,5 +1,6 @@
 import { DoctavianGenerationClient } from '../apps/agent/src/providers/doctavian-client.ts';
 import { createDoctavianReleaseTemplate } from '../apps/agent/src/providers/doctavian-template.ts';
+import { createCanonicalDoctavianReleaseData } from './doctavian-canonical.ts';
 
 function required(name: 'DOCTAVIAN_API_KEY' | 'DOCTAVIAN_ACCESS_TOKEN'): string {
   const value = process.env[name]?.trim();
@@ -20,25 +21,7 @@ async function main(): Promise<void> {
     templateFilename: 'veriremit-release-template.docx',
     templateBytes: createDoctavianReleaseTemplate(),
     dataFilename: 'veriremit-release-data.json',
-    data: {
-      Release: {
-        CaseId: 'case_acme_po_4821',
-        Supplier: 'ACME Components GmbH',
-        VendorId: 'V-1042',
-        PoNumber: 'PO-4821',
-        Amount: '48620.00',
-        Currency: 'EUR',
-        Beneficiary: 'ACME Components GmbH',
-        Iban: 'DE72 5001 0517 5407',
-        ReviewerName: 'Tomi Seregi',
-        VerificationReference: 'VR-LIVE-4821',
-        VerifiedAt: new Date().toISOString(),
-        Checks: [
-          { Code: 'bank_account_continuity', Outcome: 'PASS', Summary: 'Independent trusted callback confirmed the requested account.' },
-          { Code: 'human_verification', Outcome: 'PASS', Summary: 'Human verification is recorded before document generation.' },
-        ],
-      },
-    },
+    data: createCanonicalDoctavianReleaseData(new Date().toISOString()),
     outputFilename: 'doctavian-payment-release-authorization.pdf',
     externalContextId: `veriremit-smoke-${Date.now()}`,
   });

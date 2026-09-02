@@ -1,6 +1,6 @@
 # Sponsor Access Contact Log
 
-Last updated: 2026-09-01
+Last updated: 2026-09-02
 
 This file records only non-secret sponsor access actions relevant to submission readiness. It intentionally excludes message IDs, credentials, tokens, signing links, envelope identifiers, and provider account identifiers.
 
@@ -8,22 +8,21 @@ This file records only non-secret sponsor access actions relevant to submission 
 | --- | --- | --- | --- |
 | Nutrient | Hackathon access path + DWS developer credentials | Obtained credentials, validated the live extraction contract, then ran the final extraction + Viewer smoke against the synthetic packet | **COMPLETE - live extraction and scoped read-only Viewer session verified** |
 | Foxit | Foxit developer access + direct eSign developer account | Obtained developer credentials, fixed the MCP file-path contract, verified a reversible live MCP operation, created a real eSign envelope, completed the human signature, and queried authoritative provider state | **COMPLETE - MCP verified; eSign envelope reached `EXECUTED`; signer action confirmed in activity history** |
-| Doctavian | `hello@doctavian.com` / Kanwal Roshi support thread | Provisioned hackathon API key obtained; Microsoft OAuth flow successfully issued an API-scoped bearer token; clean server-side probes then reproduced `401 AUTHORIZATION_ERROR` on caller-profile/membership, limits, and template-upload endpoints | **BLOCKED - sponsor-side caller/team authorization or missing demo caller context must be clarified** |
+| Doctavian | `hello@doctavian.com` / Kanwal Roshi support thread | Provisioned API key and Microsoft OAuth now authenticate; latest canonical run reached template processing after both multipart uploads succeeded | **PENDING LIVE RETEST - generation returned 500 `TEMPLATE_READ_FAILED`; corrected DOCX package must complete generation/download** |
 
 ## Doctavian handoff
 
-Doctavian support previously confirmed the intended authentication path: use both the provisioned API key and a Microsoft OAuth bearer token from the supplied Postman collection. That OAuth acquisition step has now been completed successfully.
+Doctavian support previously confirmed the intended authentication path: use both the provisioned API key and a Microsoft OAuth bearer token from the supplied Postman collection. That path is now live-proven.
 
-The remaining blocker was isolated with credential-safe live probes:
+The latest canonical credential-safe attempt reached:
 
-1. the Microsoft Authorization Code + PKCE flow issued an access token with the expected API scope;
-2. a one-run clean server-side runner received the token/API key only through an ephemeral encrypted handoff;
-3. `GET /v1/common/limits/get` returned `401 AUTHORIZATION_ERROR` with bearer only, API key only, and bearer + API key;
-4. `GET /v1/common/user/get`, described by the sponsor collection as returning caller profile and membership details, returned the same `401 AUTHORIZATION_ERROR` using inherited OAuth semantics;
-5. `POST /v1/documents/template/upload` returned the same authorization failure before document processing; adding `X-Storage-Type` did not change the result;
-6. decrypted credentials and the temporary verification workflow/input were removed after the probes.
+1. `GET /v1/common/user/get` -> 200;
+2. `POST /v1/documents/template/upload` -> 201;
+3. `POST /v1/documents/data/upload` -> 201;
+4. `POST /v1/documents/document/generate` -> 500 `TEMPLATE_READ_FAILED`;
+5. download was not reached.
 
-The next support action is therefore to have Doctavian confirm that the Microsoft identity used for OAuth is actually authorized/mapped to the provisioned Team Tomi demo account, or tell us what additional demo-environment caller context is required. After that correction, obtain a fresh token if necessary and rerun `npm run smoke:doctavian`.
+This supersedes the earlier authorization evidence: authentication and both uploads are working. The former hand-built DOCX package and repeater syntax have been replaced based on Doctavian's official Mission 1 sample and a maintained DOCX generator. The next action is a fresh-token live retest using the canonical files under `artifacts/doctavian/`.
 
 Promote Doctavian to PASS only if template upload, structured data upload, PDF generation, and download all succeed.
 

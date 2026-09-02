@@ -13,6 +13,7 @@
   ],
   "scripts": {
     "generate:fixtures": "node --experimental-strip-types scripts/generate-fixtures.ts",
+    "generate:doctavian-artifacts": "node --experimental-strip-types scripts/generate-doctavian-artifacts.ts",
     "demo:reset": "node --experimental-strip-types scripts/demo-reset.ts && npm run generate:fixtures",
     "test": "node scripts/run-tests.mjs",
     "test:e2e": "playwright test",

@@ -45,7 +45,7 @@ Nutrient DWS is VeriRemit's evidence layer: Data Extraction turns the source PDF
 
 Doctavian is VeriRemit's approved-document generation layer. After deterministic controls and the trusted human callback clear the release gate, VeriRemit uploads a structured JSON representation of the approved case and a deterministic DOCX template. The template contains merge fields for the case/payment facts, a repeater over verification-control results, and a calculated control count. Doctavian is intended to generate the canonical Payment Release Authorization PDF that is then handed to Foxit for assembly.
 
-The adapter/template/composition are complete, the hackathon API key is provisioned, and the supplied Microsoft OAuth flow successfully issued an API-scoped bearer token. A credential-safe clean server-side verification currently receives `401 AUTHORIZATION_ERROR` before document processing—including from Doctavian's caller profile/membership endpoint and template upload. The remaining dependency is therefore sponsor-side authorization/mapping of the Microsoft caller to the provisioned demo account, or clarification of any additional demo caller context. Until that provider-side authorization issue is resolved and the live generation smoke passes, VeriRemit does not represent Doctavian as live-verified.
+The adapter/template/composition are complete, and live authentication plus both multipart uploads are verified: `/v1/common/user/get` returned 200, template upload returned 201, and JSON data upload returned 201. The latest generation call returned 500 `TEMPLATE_READ_FAILED`. Investigation found an unusually minimal three-part hand-built DOCX and repeater text that differed from Doctavian's official Mission 1 form. The template now uses pinned `docx@9.7.1`, official repeater syntax, and independent structural package checks. This is a local compatibility fix only; VeriRemit keeps Doctavian at **PENDING LIVE RETEST** until generation returns 201 and a 200 download yields a genuine non-empty PDF.
 
 ## Where Foxit does the heavy lifting
 
@@ -63,7 +63,7 @@ VeriRemit is a TypeScript monorepo with:
 - a four-tool bounded agent surface;
 - deterministic policy and explicit case-state packages;
 - Nutrient Data Extraction and DWS Viewer adapters;
-- deterministic dependency-free Doctavian DOCX generation plus typed generation/download integration;
+- deterministic-content Doctavian DOCX generation through pinned `docx@9.7.1`, plus typed generation/download integration;
 - Foxit's official stdio MCP server behind a static reversible-tool allow-list;
 - direct Foxit eSign integration outside MCP;
 - append-only hash-chained audit records;
@@ -80,7 +80,7 @@ The hardest boundary was making the agent useful without making it authoritative
 
 A second challenge was preserving evidence provenance across provider boundaries. Nutrient-specific extraction metadata is normalized while retaining confidence, page, bounding-box, and source-document references needed by the reviewer. The approved normalized state is then rendered into structured generation data and an auditable authorization rather than asking a model to free-write the financial document.
 
-Provider contracts also differ materially. Doctavian's documented generation flow requires both a provisioned `X-Api-Key` and OAuth bearer authorization; Foxit MCP is a long-lived stdio process while eSign is direct HTTP. Live Nutrient probing also showed that its extraction schema accepts a deliberately restricted JSON-Schema subset, so the implementation was narrowed to the provider-proven request contract instead of preserving unsupported schema keywords. Live Doctavian probing has now isolated the remaining issue above the document layer: bearer-only, API-key-only, bearer+API-key, caller-profile/membership and template-upload calls all fail at the demo authorization boundary, so the project keeps that sponsor claim gated instead of treating OAuth issuance alone as proof.
+Provider contracts also differ materially. Doctavian's documented generation flow requires both a provisioned `X-Api-Key` and OAuth bearer authorization; Foxit MCP is a long-lived stdio process while eSign is direct HTTP. Live Nutrient probing also showed that its extraction schema accepts a deliberately restricted JSON-Schema subset, so the implementation was narrowed to the provider-proven request contract instead of preserving unsupported schema keywords. Live Doctavian probing has now passed authentication and both uploads, isolating the remaining proof at template processing/generation. The project keeps that sponsor claim gated instead of treating local DOCX compatibility tests as live provider success.
 
 ## Accomplishments
 
@@ -100,13 +100,13 @@ Provider contracts also differ materially. Doctavian's documented generation flo
 - The real Nutrient extraction returned five grounded fields and the DWS Viewer session succeeded.
 - The real Foxit MCP reversible PDF smoke passed.
 - The real Foxit eSign human-signature round trip reached authoritative `EXECUTED` state with a recorded signer action.
-- Doctavian OAuth token issuance succeeded, and the remaining demo authorization failure has been reproduced without committing or logging provider credentials.
+- Doctavian authentication and both multipart uploads succeeded; the remaining 500 template-read failure was reproduced without committing or logging provider credentials, and the corrected package is pending live retest.
 
 ## Current live verification
 
 **PASS:** Groq bounded reviewer, Nutrient Data Extraction, Nutrient DWS Viewer, Foxit PDF Services MCP, Foxit direct eSign, real human Foxit signature, authoritative Foxit completion.
 
-**BLOCKED:** Doctavian live generation only. Microsoft OAuth token issuance succeeded, but the Doctavian demo API currently returns `401 AUTHORIZATION_ERROR` at its caller authorization boundary before document processing. Sponsor-side caller/team authorization or an additional demo caller context must be resolved before the real generation smoke can pass.
+**PENDING LIVE RETEST:** Doctavian live generation only. Authentication is proven, template and data uploads return 201, and the remaining proof is a 201 generation plus 200 download of a non-empty PDF using the corrected canonical artifacts.
 
 This distinction is intentional: the architecture and Doctavian integration exist, but the final canonical three-sponsor chain will not be described as fully live until the real Doctavian generation/download smoke succeeds.
 
@@ -116,7 +116,7 @@ Agent safety is easier to reason about when authority is moved out of the prompt
 
 ## What's next
 
-Have Doctavian confirm/correct authorization of the Microsoft identity for the provisioned Team Tomi demo account, or provide the missing demo caller context if one exists. Then obtain a fresh OAuth token if required and rerun the real Doctavian template/data/generation/download smoke. After that succeeds, record the 2–4 minute end-to-end sponsor demo. The final Devpost submission also requires a public YouTube/Vimeo demo URL and a downloadable backup link to the original MP4. After those deliverables exist, opt into the Nutrient, Doctavian, and Foxit sponsor tracks and submit the project before the hackathon deadline.
+Refresh the Microsoft OAuth token and immediately rerun the real Doctavian template/data/generation/download flow using the canonical artifacts under `artifacts/doctavian/`. After that succeeds, record the 2–4 minute end-to-end sponsor demo. The final Devpost submission also requires a public YouTube/Vimeo demo URL and a downloadable backup link to the original MP4. After those deliverables exist, opt into the Nutrient, Doctavian, and Foxit sponsor tracks and submit the project before the hackathon deadline.
 
 For a post-hackathon product, the next steps would be configurable policy packs for accounts-payable teams, ERP/vendor-master integrations, independent callback workflows, durable transactional storage, authenticated multi-user access, and externally anchored audit evidence.
 

@@ -9,10 +9,12 @@
     "@veriremit/audit": "0.0.0",
     "@veriremit/domain": "0.0.0",
     "@veriremit/policy": "0.0.0",
+    "docx": "9.7.1",
     "fastify": "5.12.1"
   },
   "devDependencies": {
-    "@types/node": "22.20.1"
+    "@types/node": "22.20.1",
+    "jszip": "3.10.1"
   },
   "scripts": {
     "dev": "node --experimental-strip-types src/main.ts",

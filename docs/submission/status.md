@@ -1,6 +1,6 @@
 # Submission Readiness Status
 
-Last updated: 2026-09-01
+Last updated: 2026-09-02
 
 | Gate | Status | Evidence / blocker |
 | --- | --- | --- |
@@ -10,7 +10,7 @@ Last updated: 2026-09-01
 | Nutrient adapter contract | PASS | Grounded response mapping narrowed to the live-proven extraction request/schema contract |
 | Nutrient DWS Viewer adapter | PASS | Backend document upload + short-lived scoped session contract tests |
 | Doctavian generation adapter | PASS | Bearer + `X-Api-Key` authentication, multipart template/data upload, generation, download, credential-safe errors |
-| Doctavian template | PASS | Deterministic dependency-free DOCX with merge fields, structured repeater, and control-count calculation |
+| Doctavian template | PASS (LOCAL STRUCTURAL/COMPATIBILITY) | Pinned `docx@9.7.1` emits the standard DOCX package graph; JSZip structural checks verify required parts, release fields, official repeater form, and control-count expression. This is not live Doctavian proof |
 | Doctavian -> Foxit composition | PASS | Server gate passes structured approved case data to Doctavian before Foxit assembly; audit ordering covered |
 | Foxit MCP adapter contract | PASS | Official-tool contract tests and project-level static reversible allow-list |
 | Foxit eSign adapter contract | PASS | Direct API contract tests; signing remains outside MCP |
@@ -23,7 +23,7 @@ Last updated: 2026-09-01
 | Live Nutrient extraction | **PASS** | Real extraction succeeded with 5 grounded fields from the synthetic vendor-master document |
 | Live Nutrient DWS Viewer | **PASS** | Real DWS upload and scoped read-only Viewer session succeeded; provider identifiers/tokens were intentionally not printed |
 | Doctavian caller/account authorization | **PASS** | Microsoft OAuth succeeds and `/v1/common/user/get` now returns 200 for the provisioned active account after the first successful Microsoft portal login |
-| Live Doctavian generation | **PENDING CLEAN RUN** | The canonical multipart template upload -> multipart data upload -> generation -> PDF download path still needs one uninterrupted run with a fresh bearer token; expired-token and malformed scratch attempts do not count as proof |
+| Live Doctavian generation | **PENDING LIVE RETEST** | Fresh OAuth and API-key auth passed; `user/get` returned 200 and canonical template/data multipart uploads returned 201. Generation returned 500 `TEMPLATE_READ_FAILED`; the corrected template now needs the full 201 generation + 200 PDF-download retest |
 | Live Foxit MCP | **PASS** | Real Foxit stdio MCP connected and completed a reversible HTML-to-PDF conversion/download; signing capability remained outside the agent boundary |
 | Live Foxit eSign envelope | **PASS** | A real developer-test envelope was created through the direct eSign API and completed by the human signer |
 | Real human Foxit signature | **PASS** | Fresh authoritative Foxit lookup reported `EXECUTED`; activity history independently confirmed a signer action |
@@ -37,14 +37,14 @@ Last updated: 2026-09-01
 | Downloadable MP4 backup | PENDING | Devpost requires a downloadable backup link to the original demo MP4 in addition to the YouTube/Vimeo demo URL |
 | Final Devpost submit | **BLOCKED ON REQUIRED DELIVERABLES** | Pass the clean live Doctavian generation smoke, record/upload the demo and MP4 backup, select sponsor tracks, then submit before the deadline |
 
-The prior Doctavian account-authorization hypothesis is resolved. Microsoft OAuth works, the same Microsoft identity can enter the demo portal, and `GET /v1/common/user/get` now returns HTTP 200 for the active provisioned account. The remaining Doctavian risk is therefore much narrower: one clean execution of the actual document-generation chain using the canonical VeriRemit template and structured release JSON.
+The prior Doctavian account-authorization hypothesis is resolved. Microsoft OAuth works, `GET /v1/common/user/get` returns HTTP 200, and both multipart uploads return HTTP 201. The latest canonical generation request reached Doctavian's template reader and returned HTTP 500 with the sanitized code `TEMPLATE_READ_FAILED`.
 
-The latest interactive attempts are **not** sponsor proof. They repeatedly crossed the one-hour bearer expiry boundary, used several malformed/manual multipart constructions, and one scratch script changed the canonical VeriRemit release data while sending `/v1/documents/data/upload` as raw JSON. Doctavian's documented storage workflow requires the template and JSON data to be uploaded as multipart files before generation. Those scratch attempts are discarded rather than being papered over as progress.
+Local investigation found that the failed hand-built template had only three package parts and used repeater text that differs from Doctavian's current official Mission 1 template. The replacement uses the maintained `docx` generator and official repeater form, and its generated package passes objective structural/compatibility checks. Because Doctavian's reader is proprietary, that local evidence cannot promote the live status beyond **PENDING LIVE RETEST**.
 
 The critical path is now:
 
-1. once the local Postman/tool cap clears, generate a fresh Microsoft OAuth token and keep it inside Postman/local execution rather than pasting it into chat or source;
-2. run the canonical VeriRemit Doctavian chain immediately and without exploratory edits: multipart template upload -> multipart structured JSON upload -> generation -> PDF download;
+1. refresh the Microsoft OAuth token and keep it inside Postman/local execution rather than pasting it into chat or source;
+2. immediately upload `artifacts/doctavian/veriremit-release-template.docx` and `artifacts/doctavian/veriremit-release-data.json` as multipart file bytes under field `file`, then run generation and PDF download with the returned IDs;
 3. promote Doctavian only if the returned artifact is a real non-empty PDF whose merge/repeater/calculation content is correct;
 4. reset the demo and record the 2-4 minute end-to-end flow;
 5. upload the public demo video and a downloadable original-MP4 backup;
