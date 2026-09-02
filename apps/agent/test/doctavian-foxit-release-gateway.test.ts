@@ -5,7 +5,7 @@ async function loadGateway() {
   return import('../src/providers/doctavian-foxit-release-gateway.ts').catch(() => ({} as Record<string, unknown>));
 }
 
-test('gated release generation runs Doctavian before Foxit evidence assembly and preserves provider evidence', async () => {
+test('gated release generation runs Doctavian before Foxit and adapts approved case data to the provider envelope', async () => {
   const module = await loadGateway();
   assert.equal(typeof module.DoctavianFoxitReleaseGateway, 'function');
 
@@ -60,7 +60,11 @@ test('gated release generation runs Doctavian before Foxit evidence assembly and
   assert.equal(doctavianInput.templateFilename, 'veriremit-release-template.docx');
   assert.equal(new TextDecoder().decode(doctavianInput.templateBytes.subarray(0, 2)), 'PK');
   assert.equal(doctavianInput.dataFilename, 'veriremit-release-data.json');
-  assert.deepEqual(doctavianInput.data, releaseData);
+  assert.deepEqual(doctavianInput.data, {
+    data: {
+      Release: [releaseData.Release],
+    },
+  });
   assert.equal(doctavianInput.outputFilename, 'doctavian-payment-release-authorization.pdf');
   assert.equal(doctavianInput.externalContextId, 'veriremit-case_acme_po_4821');
 
