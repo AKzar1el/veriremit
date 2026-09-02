@@ -44,12 +44,27 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function releaseCaseId(data: Readonly<Record<string, unknown>>): string {
+function validatedRelease(data: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> {
   const release = data.Release;
   if (!isRecord(release) || typeof release.CaseId !== 'string' || release.CaseId.trim().length === 0) {
     throw new Error('Structured release data must include Release.CaseId.');
   }
-  return release.CaseId.trim();
+  return release;
+}
+
+function releaseCaseId(release: Readonly<Record<string, unknown>>): string {
+  return (release.CaseId as string).trim();
+}
+
+function doctavianDataEnvelope(release: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> {
+  // Doctavian's live-proven DOCX contract resolves root collections beneath a top-level
+  // `data` object. Keep VeriRemit's internal release shape provider-neutral and adapt it
+  // only at the outbound provider boundary.
+  return {
+    data: {
+      Release: [release],
+    },
+  };
 }
 
 export class DoctavianFoxitReleaseGateway {
@@ -65,12 +80,13 @@ export class DoctavianFoxitReleaseGateway {
     if (!input.releaseData) {
       throw new Error('Structured release data is required for Doctavian generation.');
     }
-    const caseId = releaseCaseId(input.releaseData);
+    const release = validatedRelease(input.releaseData);
+    const caseId = releaseCaseId(release);
     const generated = await this.doctavian.generate({
       templateFilename: 'veriremit-release-template.docx',
       templateBytes: createDoctavianReleaseTemplate(),
       dataFilename: 'veriremit-release-data.json',
-      data: input.releaseData,
+      data: doctavianDataEnvelope(release),
       outputFilename: 'doctavian-payment-release-authorization.pdf',
       externalContextId: `veriremit-${caseId}`,
     });
