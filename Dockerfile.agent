@@ -22,6 +22,7 @@ RUN npm ci --omit=dev --ignore-scripts --no-audit --no-fund
 COPY apps/agent apps/agent
 COPY packages packages
 COPY fixtures fixtures
+COPY artifacts/doctavian artifacts/doctavian
 
 RUN mkdir -p /var/lib/veriremit && chown -R node:node /var/lib/veriremit /app
 USER node
