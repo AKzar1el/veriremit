@@ -1,6 +1,6 @@
 # VeriRemit - Devpost Submission Copy
 
-> Publishing gate: this copy targets the Nutrient, Doctavian, and Foxit sponsor tracks. Do not convert implementation/contract coverage into a live-provider claim until the matching row in `docs/verification/live-provider-checklist.md` is `PASS`. Fixture behavior must never be presented as sponsor API proof.
+> Publishing gate: this copy targets the Nutrient, Doctavian, and Foxit sponsor tracks. Fixture behavior must never be presented as sponsor API proof. Live claims below are backed by `docs/verification/live-provider-checklist.md`.
 
 ## Project name
 
@@ -14,7 +14,7 @@ VeriRemit catches suspicious vendor bank-detail changes from source documents, b
 
 A vendor invoice can look completely legitimate while changing only one field that matters: the bank account. VeriRemit reviews a synthetic supplier packet, extracts comparable facts with source provenance, detects a changed IBAN deterministically, and refuses to prepare a payment-release document until a human independently verifies the change using the pre-existing vendor-master contact.
 
-After approval, the intended live chain uses Doctavian to turn the approved structured case into a Payment Release Authorization. Foxit's MCP server performs only reversible PDF assembly, then Foxit eSign creates a real human-signature envelope through the direct API. VeriRemit never moves money and the agent never signs.
+After approval, Doctavian turns the approved structured case into a Payment Release Authorization. Foxit's MCP server performs only reversible PDF assembly, then Foxit eSign creates a real human-signature envelope through the direct API. VeriRemit never moves money and the agent never signs.
 
 ## Inspiration
 
@@ -31,7 +31,7 @@ The engineering problem is not simply “can an LLM read an invoice?” It is de
 5. A changed bank account creates a hard block even when the rest of the packet matches.
 6. The reviewer can inspect the source evidence through a short-lived Nutrient DWS Viewer session.
 7. The bank change can be resolved only by recording an independent callback using the trusted contact stored in the vendor master; contact details from the suspicious change notice are rejected.
-8. Only after the server-side release gate passes may VeriRemit send the approved structured case data to Doctavian. A deterministic DOCX template uses merge fields, a repeater over verification controls, and a calculated control count to generate the Payment Release Authorization PDF.
+8. Only after the server-side release gate passes may VeriRemit send the approved structured case data to Doctavian. A deterministic provider-native DOCX template uses merge fields, a repeater over verification controls, and a calculated control count to generate the Payment Release Authorization PDF.
 9. Foxit's official MCP server uploads that generated authorization PDF plus the source evidence, merges the packet, and downloads the final release document. The VeriRemit agent boundary statically allows only reversible document operations.
 10. After the packet exists, the agent can request a Foxit eSign envelope through the direct eSign API. The agent cannot perform the signature.
 11. A human signs in Foxit. VeriRemit accepts completion only after Foxit's authoritative envelope status reports completion.
@@ -41,11 +41,15 @@ The engineering problem is not simply “can an LLM read an invoice?” It is de
 
 Nutrient DWS is VeriRemit's evidence layer: Data Extraction turns the source PDFs into comparable, grounded facts with confidence and page coordinates, while DWS Viewer gives the human reviewer a short-lived path back to the original evidence instead of asking them to trust an AI summary.
 
+The live Nutrient proof completed both extraction and Viewer flows against the real provider.
+
 ## Where Doctavian does the heavy lifting
 
-Doctavian is VeriRemit's approved-document generation layer. After deterministic controls and the trusted human callback clear the release gate, VeriRemit uploads a structured JSON representation of the approved case and a deterministic DOCX template. The template contains merge fields for the case/payment facts, a repeater over verification-control results, and a calculated control count. Doctavian is intended to generate the canonical Payment Release Authorization PDF that is then handed to Foxit for assembly.
+Doctavian is VeriRemit's approved-document generation layer. After deterministic controls and the trusted human callback clear the release gate, VeriRemit uploads a structured JSON representation of the approved case and a deterministic DOCX template. The template contains merge fields for the case/payment facts, a repeater over verification-control results, and a calculated control count. Doctavian generates the canonical Payment Release Authorization PDF that is then handed to Foxit for assembly.
 
-The adapter/template/composition are complete, and live authentication plus both multipart uploads are verified: `/v1/common/user/get` returned 200, template upload returned 201, and JSON data upload returned 201. The latest generation call returned 500 `TEMPLATE_READ_FAILED`. Investigation found an unusually minimal three-part hand-built DOCX and repeater text that differed from Doctavian's official Mission 1 form. The template now uses pinned `docx@9.7.1`, official repeater syntax, and independent structural package checks. This is a local compatibility fix only; VeriRemit keeps Doctavian at **PENDING LIVE RETEST** until generation returns 201 and a 200 download yields a genuine non-empty PDF.
+The live Doctavian proof is complete: the Microsoft OAuth user preflight returned `200`, template upload returned `201`, data upload returned `201`, generation returned `201`, and the generated PDF downloaded with `200`. The downloaded VeriRemit PDF was inspected and contained the expected ACME Components case, two `PASS` controls, `CONTROL COUNT: 2`, the human-verification reference, amount/beneficiary/IBAN details, and the explicit no-payment-execution boundary.
+
+A useful compatibility finding came from the live test. Generic programmatically authored DOCX packages uploaded successfully but were rejected by Doctavian's template reader. Doctavian's own Mission 1 template succeeded under the same account/API path. The working VeriRemit template therefore preserves that provider-native Maven Word package structure rather than assuming a generic DOCX writer produces an equivalent template.
 
 ## Where Foxit does the heavy lifting
 
@@ -63,7 +67,8 @@ VeriRemit is a TypeScript monorepo with:
 - a four-tool bounded agent surface;
 - deterministic policy and explicit case-state packages;
 - Nutrient Data Extraction and DWS Viewer adapters;
-- deterministic-content Doctavian DOCX generation through pinned `docx@9.7.1`, plus typed generation/download integration;
+- a tracked provider-native Doctavian DOCX template plus typed upload/generation/download integration;
+- a provider-boundary adapter that emits Doctavian's proven `{ data: { Release: [...] } }` shape without contaminating the internal domain model;
 - Foxit's official stdio MCP server behind a static reversible-tool allow-list;
 - direct Foxit eSign integration outside MCP;
 - append-only hash-chained audit records;
@@ -80,7 +85,7 @@ The hardest boundary was making the agent useful without making it authoritative
 
 A second challenge was preserving evidence provenance across provider boundaries. Nutrient-specific extraction metadata is normalized while retaining confidence, page, bounding-box, and source-document references needed by the reviewer. The approved normalized state is then rendered into structured generation data and an auditable authorization rather than asking a model to free-write the financial document.
 
-Provider contracts also differ materially. Doctavian's documented generation flow requires both a provisioned `X-Api-Key` and OAuth bearer authorization; Foxit MCP is a long-lived stdio process while eSign is direct HTTP. Live Nutrient probing also showed that its extraction schema accepts a deliberately restricted JSON-Schema subset, so the implementation was narrowed to the provider-proven request contract instead of preserving unsupported schema keywords. Live Doctavian probing has now passed authentication and both uploads, isolating the remaining proof at template processing/generation. The project keeps that sponsor claim gated instead of treating local DOCX compatibility tests as live provider success.
+Provider contracts also differ materially. Doctavian requires API-key plus OAuth authorization and proved sensitive to the DOCX package structure used by its Maven Word authoring path. Foxit MCP is a long-lived stdio process while eSign is direct HTTP. Nutrient's extraction endpoint accepts a deliberately restricted JSON-Schema subset. The implementation was narrowed to the contracts actually proven against the providers instead of preserving assumptions that only passed locally.
 
 ## Accomplishments
 
@@ -88,35 +93,35 @@ Provider contracts also differ materially. Doctavian's documented generation flo
 - A suspicious change-letter phone number cannot be used as the trusted verification source.
 - Corrupting the audit chain disables consequential actions.
 - Structured generation cannot run without approved release data.
-- The deterministic Doctavian template includes merge fields, repeated verification-control rows, and a calculated control count.
+- The Doctavian template includes merge fields, repeated verification-control rows, and a calculated control count.
 - Foxit signing is absent from the MCP capability surface exposed to the VeriRemit agent.
-- Foxit MCP can accept the generated PDF directly without re-generating it from model-produced HTML.
+- Foxit MCP accepts the Doctavian-generated PDF directly without re-generating it from model-produced HTML.
 - The agent can request a direct eSign envelope only after the server has prepared an approved release.
 - Signing-session URLs are never returned to the language model.
 - Final authorization requires authoritative signature completion, not a browser redirect.
 - Sponsor adapters and fixture behavior are explicitly separated so local fixtures cannot be misrepresented as live API evidence.
-- The clean CI baseline passes 123/123 tests, strict TypeScript checks, production build, secret scan, Chromium E2E, Docker build, and real container `/health` startup.
+- The CI baseline passes 123/123 tests, strict TypeScript checks, production build, secret scan, Chromium E2E, Docker build, and real container `/health` startup.
 - The real Groq bounded-reviewer smoke passed.
-- The real Nutrient extraction returned five grounded fields and the DWS Viewer session succeeded.
+- The real Nutrient extraction and DWS Viewer flows passed.
+- The real Doctavian structured generation and PDF download passed with the canonical VeriRemit case.
 - The real Foxit MCP reversible PDF smoke passed.
 - The real Foxit eSign human-signature round trip reached authoritative `EXECUTED` state with a recorded signer action.
-- Doctavian authentication and both multipart uploads succeeded; the remaining 500 template-read failure was reproduced without committing or logging provider credentials, and the corrected package is pending live retest.
 
 ## Current live verification
 
-**PASS:** Groq bounded reviewer, Nutrient Data Extraction, Nutrient DWS Viewer, Foxit PDF Services MCP, Foxit direct eSign, real human Foxit signature, authoritative Foxit completion.
+**PASS:** Groq bounded reviewer, Nutrient Data Extraction, Nutrient DWS Viewer, Doctavian generation/download, Foxit PDF Services MCP, Foxit direct eSign, real human Foxit signature, authoritative Foxit completion.
 
-**PENDING LIVE RETEST:** Doctavian live generation only. Authentication is proven, template and data uploads return 201, and the remaining proof is a 201 generation plus 200 download of a non-empty PDF using the corrected canonical artifacts.
-
-This distinction is intentional: the architecture and Doctavian integration exist, but the final canonical three-sponsor chain will not be described as fully live until the real Doctavian generation/download smoke succeeds.
+Before recording, I will run one fresh canonical end-to-end pass from the exact submitted code so the video also catches any short-lived credential/session drift. That is a recording-readiness check, not an unresolved sponsor integration.
 
 ## What I learned
 
 Agent safety is easier to reason about when authority is moved out of the prompt. Prompts explain intent; deterministic code owns invariants; state machines own transitions; provider adapters own external contracts; structured generation owns the approved document; humans own the decisions that should remain human.
 
+The Doctavian debugging also reinforced a narrower engineering lesson: a file being a structurally valid DOCX does not mean it is equivalent to a provider-authored template. When a provider has an authoring/runtime contract, preserve and test that contract rather than abstracting it away prematurely.
+
 ## What's next
 
-Refresh the Microsoft OAuth token and immediately rerun the real Doctavian template/data/generation/download flow using the canonical artifacts under `artifacts/doctavian/`. After that succeeds, record the 2–4 minute end-to-end sponsor demo. The final Devpost submission also requires a public YouTube/Vimeo demo URL and a downloadable backup link to the original MP4. After those deliverables exist, opt into the Nutrient, Doctavian, and Foxit sponsor tracks and submit the project before the hackathon deadline.
+Run the final fresh end-to-end sponsor pass from the submitted runtime, then record the 2-4 minute demo. The final Devpost submission also requires a public YouTube/Vimeo demo URL and a downloadable backup link to the original MP4. After those deliverables exist, opt into the Nutrient, Doctavian, and Foxit sponsor tracks and submit before the hackathon deadline.
 
 For a post-hackathon product, the next steps would be configurable policy packs for accounts-payable teams, ERP/vendor-master integrations, independent callback workflows, durable transactional storage, authenticated multi-user access, and externally anchored audit evidence.
 
