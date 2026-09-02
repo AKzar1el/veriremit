@@ -1,54 +1,48 @@
-# Submission Readiness Status
+# Submission Status
 
-Last updated: 2026-09-02
+Last verified: **September 2, 2026**
 
-| Gate | Status | Evidence / blocker |
+## Repository / implementation
+
+- Public repository: `https://github.com/AKzar1el/veriremit`
+- Canonical demo case: `case_acme_po_4821`
+- Doctavian runtime path now uses a tracked provider-native DOCX template package rather than synthesizing a generic DOCX at request time.
+- The provider adapter keeps VeriRemit's internal `Release` object provider-neutral and emits Doctavian's live-proven `{ "data": { "Release": [...] } }` envelope only at the provider boundary.
+- CI verifies tests, formatting/lint, strict typecheck/build, secret scanning, Playwright E2E, and the production Docker image.
+
+## Live provider verification
+
+| Provider path | Status | Evidence |
 | --- | --- | --- |
-| Core deterministic workflow | PASS | Clean GitHub Actions baseline: 123/123 tests passing; core/provider/app typechecks, Vite build, and secret scan passing |
-| Prompt-first bounded reviewer | PASS | OpenAI Agents SDK with four case-scoped tools; Groq `openai/gpt-oss-120b` provider contract covered; OpenAI fallback preserved |
-| Synthetic PDF packet | PASS | Deterministic generation + text/visual QA |
-| Nutrient adapter contract | PASS | Grounded response mapping narrowed to the live-proven extraction request/schema contract |
-| Nutrient DWS Viewer adapter | PASS | Backend document upload + short-lived scoped session contract tests |
-| Doctavian generation adapter | PASS | Bearer + `X-Api-Key` authentication, multipart template/data upload, generation, download, credential-safe errors |
-| Doctavian template | PASS (LOCAL STRUCTURAL/COMPATIBILITY) | Pinned `docx@9.7.1` emits the standard DOCX package graph; JSZip structural checks verify required parts, release fields, official repeater form, and control-count expression. This is not live Doctavian proof |
-| Doctavian -> Foxit composition | PASS | Server gate passes structured approved case data to Doctavian before Foxit assembly; audit ordering covered |
-| Foxit MCP adapter contract | PASS | Official-tool contract tests and project-level static reversible allow-list |
-| Foxit eSign adapter contract | PASS | Direct API contract tests; signing remains outside MCP |
-| Tamper-evident audit coverage | PASS | Doctavian generation, Foxit MCP completion, release preparation, eSign creation, and final signature state are hash-chained |
-| Production dependency audit | PASS | Clean GitHub runner: `npm audit --omit=dev --audit-level=high` reports 0 vulnerabilities |
-| Dependency lock / reproducible install | PASS | Committed `package-lock.json`; clean CI and agent container both install with `npm ci` |
-| Browser Playwright execution | PASS | Chromium CI: 2/2 golden-path tests pass on the first attempt with retries disabled |
-| Agent container packaging | PASS | `Dockerfile.agent` builds on Ubuntu CI, starts in fixture mode, and returns HTTP 200 from `/health` |
-| Live Groq bounded reviewer | **PASS** | Real Groq-backed bounded reviewer smoke succeeded; model output/credential were intentionally not printed |
-| Live Nutrient extraction | **PASS** | Real extraction succeeded with 5 grounded fields from the synthetic vendor-master document |
-| Live Nutrient DWS Viewer | **PASS** | Real DWS upload and scoped read-only Viewer session succeeded; provider identifiers/tokens were intentionally not printed |
-| Doctavian caller/account authorization | **PASS** | Microsoft OAuth succeeds and `/v1/common/user/get` now returns 200 for the provisioned active account after the first successful Microsoft portal login |
-| Live Doctavian generation | **PENDING LIVE RETEST** | Fresh OAuth and API-key auth passed; `user/get` returned 200 and canonical template/data multipart uploads returned 201. Generation returned 500 `TEMPLATE_READ_FAILED`; the corrected template now needs the full 201 generation + 200 PDF-download retest |
-| Live Foxit MCP | **PASS** | Real Foxit stdio MCP connected and completed a reversible HTML-to-PDF conversion/download; signing capability remained outside the agent boundary |
-| Live Foxit eSign envelope | **PASS** | A real developer-test envelope was created through the direct eSign API and completed by the human signer |
-| Real human Foxit signature | **PASS** | Fresh authoritative Foxit lookup reported `EXECUTED`; activity history independently confirmed a signer action |
-| Public GitHub repository | PASS | Hardened source, tests, fixtures, setup docs, sponsor verification docs, lockfile, and green CI are published on `main` |
-| Devpost project page | PASS | VeriRemit project page is published and linked to the repository |
-| Hackathon submission | **NOT YET SUBMITTED** | Live Devpost record currently has no `submitted_at`; final submission remains intentionally gated on required deliverables |
-| Sponsor-prize opt-ins | PENDING | Foxit, Nutrient and Doctavian tracks must be selected when the final hackathon submission is sent |
-| Hosted live deployment | OPTIONAL / NOT VERIFIED | Sponsor criteria require a working demo video, repo and setup—not a public agent URL; any hosted live API must be authenticated |
-| Public live API access control | BLOCKED FOR PUBLIC HOSTING | CORS is configured but authentication is intentionally external; keep live API private/local or protect it with an authenticated access proxy |
-| 2-4 minute sponsor video | **BLOCKED ON DOCTAVIAN GENERATION PROOF** | Groq, Nutrient and Foxit proof now exist; record the canonical sponsor demo only after the real Doctavian generation smoke passes |
-| Downloadable MP4 backup | PENDING | Devpost requires a downloadable backup link to the original demo MP4 in addition to the YouTube/Vimeo demo URL |
-| Final Devpost submit | **BLOCKED ON REQUIRED DELIVERABLES** | Pass the clean live Doctavian generation smoke, record/upload the demo and MP4 backup, select sponsor tracks, then submit before the deadline |
+| Groq bounded reviewer | **PASS** | Real `groq` mode completed the bounded review and persisted `reviewer.modelInvoked = true`; control flow stayed deterministic. |
+| Nutrient Data Extraction | **PASS** | Real extraction session completed with source filename/page grounding. |
+| Nutrient DWS Viewer | **PASS** | Real document upload + Viewer session path completed. |
+| Doctavian document generation | **PASS** | Microsoft OAuth user preflight `200`; template upload `201`; data upload `201`; generation `201`; PDF download `200`; generated VeriRemit PDF content validated. |
+| Foxit PDF Services MCP | **PASS** | Real upload -> merge -> download packet assembly completed through the official MCP server. |
+| Foxit eSign API | **PASS** | Real envelope creation + embedded signing session completed. |
+| Foxit human signature | **PASS** | Real signer completed the envelope; authoritative Foxit status reached `EXECUTED` and activity history recorded the signer action. |
 
-The prior Doctavian account-authorization hypothesis is resolved. Microsoft OAuth works, `GET /v1/common/user/get` returns HTTP 200, and both multipart uploads return HTTP 201. The latest canonical generation request reached Doctavian's template reader and returned HTTP 500 with the sanitized code `TEMPLATE_READ_FAILED`.
+### Doctavian evidence boundary
 
-Local investigation found that the failed hand-built template had only three package parts and used repeater text that differs from Doctavian's current official Mission 1 template. The replacement uses the maintained `docx` generator and official repeater form, and its generated package passes objective structural/compatibility checks. Because Doctavian's reader is proprietary, that local evidence cannot promote the live status beyond **PENDING LIVE RETEST**.
+The successful VeriRemit artifact contains ACME Components GmbH, `case_acme_po_4821`, `PO-4821`, the two required `PASS` controls, `CONTROL COUNT: 2`, reviewer `Tomi Seregi`, verification reference `VR-LIVE-4821`, amount/beneficiary/IBAN details, and the explicit no-payment-execution boundary.
 
-The critical path is now:
+The debugging result was specific: generic programmatically authored DOCX packages were accepted by the upload endpoint but rejected by Doctavian's template reader. Doctavian's own Mission 1 template succeeded, and preserving its provider-native Maven Word package structure produced the successful VeriRemit generation. The public repo therefore tracks that provider-native template lineage and regression-tests the Maven web-extension/package parts instead of claiming a generic DOCX writer is sufficient.
 
-1. refresh the Microsoft OAuth token and keep it inside Postman/local execution rather than pasting it into chat or source;
-2. immediately upload `artifacts/doctavian/veriremit-release-template.docx` and `artifacts/doctavian/veriremit-release-data.json` as multipart file bytes under field `file`, then run generation and PDF download with the returned IDs;
-3. promote Doctavian only if the returned artifact is a real non-empty PDF whose merge/repeater/calculation content is correct;
-4. reset the demo and record the 2-4 minute end-to-end flow;
-5. upload the public demo video and a downloadable original-MP4 backup;
-6. opt into the Foxit, Nutrient, and Doctavian sponsor prizes;
-7. submit the project to the hackathon before the deadline.
+## Recording gate
 
-A `PENDING` or `BLOCKED` row is not a failed feature claim. It means the implementation exists but the required external evidence or submission deliverable has not yet been produced. Sponsor copy must stay gated until the corresponding live check passes.
+**No sponsor integration remains blocked.** Before recording the canonical submission video, run one fresh end-to-end live pass from the checked-in runtime with fresh provider credentials, including `npm run smoke:doctavian`, so the recording is anchored to the exact submitted code and not an earlier manual provider test.
+
+## Submission work still required
+
+- record the 2-4 minute canonical end-to-end demo;
+- upload the public demo to YouTube or Vimeo;
+- upload the original MP4 to a downloadable backup location for the Devpost field;
+- paste/final-review the Devpost copy;
+- submit before **September 3, 2026 at 10:00 AM PT**.
+
+## Security
+
+- provider secrets remain runtime-only and are not committed;
+- OAuth/API tokens and provider object IDs must not appear in the demo recording;
+- old debugging bearer tokens are expired and are not part of repository state;
+- use synthetic/fictitious payment documents only.
