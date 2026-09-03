@@ -9,6 +9,10 @@ export interface FoxitMcpToolClient {
   ): Promise<unknown>;
 }
 
+export interface FoxitPdfMergeFallback {
+  merge(documentInfos: ReadonlyArray<{ documentId: string }>): Promise<string>;
+}
+
 export interface ReleasePacketEvidenceDocument {
   filename: string;
   bytes: Uint8Array;
@@ -118,14 +122,36 @@ function safeFilename(value: string, fallback: string): string {
 
 export class FoxitReleasePacketGateway implements ReleasePacketGateway {
   readonly client: FoxitMcpToolClient;
+  readonly mergeFallback: FoxitPdfMergeFallback | undefined;
 
-  constructor(client: FoxitMcpToolClient) {
+  constructor(client: FoxitMcpToolClient, mergeFallback?: FoxitPdfMergeFallback) {
     this.client = client;
+    this.mergeFallback = mergeFallback;
   }
 
   private async invoke(toolName: string, args: Record<string, unknown>): Promise<ToolPayload> {
     const result = await this.client.callToolResult(toolName, args);
     return parseToolPayload(toolName, result);
+  }
+
+  private async mergeDocuments(
+    documentInfos: ReadonlyArray<{ documentId: string }>,
+  ): Promise<string> {
+    try {
+      const merged = await this.invoke('pdf_merge', { documents: documentInfos });
+      return requiredString(merged, 'resultDocumentId', 'pdf_merge');
+    } catch (error) {
+      // Remove after https://github.com/foxitsoftware/foxit-pdf-api-mcp-server/issues/4 is fixed upstream.
+      if (
+        !(error instanceof FoxitMcpError)
+        || error.toolName !== 'pdf_merge'
+        || error.code !== 'VALIDATION_ERROR'
+        || !this.mergeFallback
+      ) {
+        throw error;
+      }
+      return this.mergeFallback.merge(documentInfos);
+    }
   }
 
   async prepare(input: ReleasePacketInput): Promise<GeneratedReleaseDocument> {
@@ -171,10 +197,9 @@ export class FoxitReleasePacketGateway implements ReleasePacketGateway {
         evidenceDocumentIds.push(requiredString(uploadedEvidence, 'documentId', 'upload_document'));
       }
 
-      const merged = await this.invoke('pdf_merge', {
-        documents: [releaseDocumentId, ...evidenceDocumentIds].map((documentId) => ({ documentId })),
-      });
-      const mergedDocumentId = requiredString(merged, 'resultDocumentId', 'pdf_merge');
+      const documentInfos = [releaseDocumentId, ...evidenceDocumentIds]
+        .map((documentId) => ({ documentId }));
+      const mergedDocumentId = await this.mergeDocuments(documentInfos);
 
       await this.invoke('download_document', {
         documentId: mergedDocumentId,
