@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { AuditEvent } from '@veriremit/audit';
+import { serializeFilesystemSave } from './filesystem-save-queue.ts';
 
 const SAFE_CASE_ID = /^[a-zA-Z0-9_-]+$/;
 
@@ -32,11 +33,13 @@ export class FilesystemAuditRepository {
   async save(caseId: string, ledger: readonly AuditEvent[]): Promise<void> {
     await mkdir(this.root, { recursive: true });
     const target = this.pathFor(caseId);
-    const temporary = `${target}.${process.pid}.${randomUUID()}.tmp`;
-    await writeFile(temporary, `${JSON.stringify(ledger, null, 2)}\n`, {
-      encoding: 'utf8',
-      mode: 0o600,
+    await serializeFilesystemSave(target, async () => {
+      const temporary = `${target}.${process.pid}.${randomUUID()}.tmp`;
+      await writeFile(temporary, `${JSON.stringify(ledger, null, 2)}\n`, {
+        encoding: 'utf8',
+        mode: 0o600,
+      });
+      await rename(temporary, target);
     });
-    await rename(temporary, target);
   }
 }

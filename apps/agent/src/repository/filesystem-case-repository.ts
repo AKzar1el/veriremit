@@ -3,6 +3,7 @@ import { link, mkdir, readFile, rename, unlink, writeFile } from 'node:fs/promis
 import { join } from 'node:path';
 import type { VerificationCase } from '@veriremit/domain';
 import type { CaseRepository } from './case-repository.ts';
+import { serializeFilesystemSave } from './filesystem-save-queue.ts';
 
 const SAFE_CASE_ID = /^[a-zA-Z0-9_-]+$/;
 
@@ -23,9 +24,11 @@ export class FilesystemCaseRepository implements CaseRepository {
   private async writeAtomic(value: VerificationCase): Promise<void> {
     await mkdir(this.root, { recursive: true });
     const target = this.pathFor(value.id);
-    const temporary = `${target}.${process.pid}.${randomUUID()}.tmp`;
-    await writeFile(temporary, `${JSON.stringify(value, null, 2)}\n`, { encoding: 'utf8', mode: 0o600 });
-    await rename(temporary, target);
+    await serializeFilesystemSave(target, async () => {
+      const temporary = `${target}.${process.pid}.${randomUUID()}.tmp`;
+      await writeFile(temporary, `${JSON.stringify(value, null, 2)}\n`, { encoding: 'utf8', mode: 0o600 });
+      await rename(temporary, target);
+    });
   }
 
   async create(value: VerificationCase): Promise<void> {

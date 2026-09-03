@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { appendEvent } from '@veriremit/audit';
 
-test('filesystem audit repository round-trips a hash chain with private file permissions', async () => {
+test('filesystem audit repository round-trips a hash chain with platform-appropriate file checks', async () => {
   const mod = await import('../src/repository/filesystem-audit-repository.ts').catch(
     () => ({} as Record<string, unknown>),
   );
@@ -30,10 +30,14 @@ test('filesystem audit repository round-trips a hash chain with private file per
     await repo.save('case_demo', ledger);
     assert.deepEqual(await repo.get('case_demo'), ledger);
 
-    const raw = await readFile(join(root, 'case_demo.audit.json'), 'utf8');
+    const target = join(root, 'case_demo.audit.json');
+    const raw = await readFile(target, 'utf8');
     assert.equal(raw.endsWith('\n'), true);
-    const mode = (await stat(join(root, 'case_demo.audit.json'))).mode & 0o777;
-    assert.equal(mode, 0o600);
+    const file = await stat(target);
+    assert.equal(file.isFile(), true);
+    if (process.platform !== 'win32') {
+      assert.equal(file.mode & 0o777, 0o600);
+    }
   } finally {
     await rm(root, { recursive: true, force: true });
   }

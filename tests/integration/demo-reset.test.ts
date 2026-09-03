@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import test from 'node:test';
 
 async function loadReset() {
@@ -41,10 +41,10 @@ test('demo reset removes only repo-local .data state and refuses wider paths', a
 test('demo reset allows a dedicated .data child used by browser recordings', async () => {
   const module = await loadReset();
   assert.equal(typeof module.resolveSafeDemoDataDir, 'function');
-  const root = '/workspace/veriremit';
+  const root = resolve('workspace', 'veriremit');
   const resolved = (module.resolveSafeDemoDataDir as (repoRoot: string, dataDir: string) => string)(
     root,
     '.data/recording',
   );
-  assert.equal(resolved, '/workspace/veriremit/.data/recording');
+  assert.equal(resolved, join(root, '.data', 'recording'));
 });
