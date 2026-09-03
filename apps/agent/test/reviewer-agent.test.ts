@@ -173,6 +173,69 @@ test('reviewer prefers Groq GPT-OSS through the OpenAI-compatible provider when 
   assert.equal('store' in (agentConfig?.modelSettings ?? {}), false);
 });
 
+test('extract_case completes provider work beyond 15 seconds inside its configured deadline', async (context) => {
+  context.mock.timers.enable({ apis: ['setTimeout'] });
+  const [{ reviewer }, agentsSdk] = await Promise.all([
+    loadAgentModules(),
+    import('@openai/agents'),
+  ]);
+  assert.equal(typeof reviewer.createReviewerAgent, 'function');
+
+  let agentConfig: Record<string, any> | undefined;
+  class FakeAgent {
+    constructor(config: Record<string, unknown>) {
+      agentConfig = config;
+    }
+  }
+
+  class UnusedProvider {
+    getModel() {
+      return undefined;
+    }
+  }
+
+  await (reviewer.createReviewerAgent as (input: unknown) => Promise<unknown>)(
+    {
+      ...toolDependencies,
+      extractCase: async () => new Promise((resolve) => {
+        setTimeout(() => resolve({
+          id: 'case_acme_po_4821',
+          status: 'review_required',
+          rules: [],
+          humanVerification: null,
+          releaseDocument: null,
+          signature: null,
+        }), 15_001);
+      }),
+      env: {},
+      sdk: {
+        Agent: FakeAgent,
+        OpenAIProvider: UnusedProvider,
+        tool: agentsSdk.tool,
+      },
+    },
+  );
+
+  const extractTool = (agentConfig?.tools as Array<{
+    name: string;
+    invoke(context: unknown, input: string): Promise<unknown>;
+  }>).find((tool) => tool.name === 'extract_case');
+  assert.ok(extractTool);
+
+  const completion = extractTool.invoke(undefined, JSON.stringify({ caseId: 'case_acme_po_4821' }));
+  context.mock.timers.tick(15_001);
+
+  assert.deepEqual(await completion, {
+    found: true,
+    id: 'case_acme_po_4821',
+    status: 'review_required',
+    rules: [],
+    humanVerification: null,
+    releasePrepared: false,
+    signatureStatus: null,
+  });
+});
+
 test('reviewer runs are hard-capped to three turns and disable OpenAI trace export', async () => {
   const { reviewer } = await loadAgentModules();
   assert.equal(typeof reviewer.runReviewerAgent, 'function');

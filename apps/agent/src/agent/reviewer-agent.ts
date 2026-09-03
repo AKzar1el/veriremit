@@ -133,7 +133,7 @@ export async function createReviewerAgent(
       description: definition.description,
       parameters: definition.parameters,
       strict: true,
-      timeoutMs: 15_000,
+      timeoutMs: definition.timeoutMs,
       execute: definition.invoke,
     })
   );
