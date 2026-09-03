@@ -13,7 +13,10 @@ test('agent prompt suggestions follow the authoritative case stage without askin
 
   const initial = suggest('created');
   assert.match(initial, /Review the ACME Components packet for PO-4821/);
+  assert.match(initial, /run the document review/i);
   assert.match(initial, /Never release a changed bank account without human verification/);
+  assert.doesNotMatch(initial, /prepare the .*payment-release authorization/i);
+  assert.doesNotMatch(initial, /send it to me for signature/i);
   assert.doesNotMatch(initial, /sign it yourself/i);
 
   const blocked = suggest('review_required');
