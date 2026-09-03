@@ -166,9 +166,29 @@ async function loadRunFunction(): Promise<RunReviewerAgentInput['run']> {
   return sdk.run;
 }
 
+function isGroqInvalidToolGeneration(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null) return false;
+  const candidate = error as {
+    status?: unknown;
+    error?: { failed_generation?: unknown };
+  };
+  return candidate.status === 400
+    && typeof candidate.error === 'object'
+    && candidate.error !== null
+    && candidate.error.failed_generation !== undefined;
+}
+
 export async function runReviewerAgent(input: RunReviewerAgentInput): Promise<unknown> {
   const run = input.run ?? await loadRunFunction();
   if (!run) throw new Error('OpenAI Agents SDK run function is unavailable.');
-  const result = await run(input.agent, input.input, { maxTurns: 3, tracingDisabled: true });
-  return result.finalOutput;
+  const options = { maxTurns: 3, tracingDisabled: true } as const;
+
+  try {
+    const result = await run(input.agent, input.input, options);
+    return result.finalOutput;
+  } catch (error) {
+    if (!isGroqInvalidToolGeneration(error)) throw error;
+    const retry = await run(input.agent, input.input, options);
+    return retry.finalOutput;
+  }
 }

@@ -253,3 +253,51 @@ test('reviewer runs are hard-capped to three turns and disable OpenAI trace expo
   assert.deepEqual(captured, { maxTurns: 3, tracingDisabled: true });
   assert.equal(result, 'Blocked pending callback.');
 });
+
+test('reviewer retries one Groq invalid tool generation and then returns the successful result', async () => {
+  const { reviewer } = await loadAgentModules();
+  let calls = 0;
+  const result = await (reviewer.runReviewerAgent as (input: unknown) => Promise<unknown>)({
+    agent: { name: 'fake-agent' },
+    input: 'Review the packet.',
+    run: async () => {
+      calls += 1;
+      if (calls === 1) {
+        throw Object.assign(new Error('Invalid tool call generated'), {
+          status: 400,
+          error: {
+            type: 'invalid_request_error',
+            failed_generation: { reason: 'Tool call arguments are not valid JSON' },
+          },
+        });
+      }
+      return { finalOutput: 'Review required.' };
+    },
+  });
+
+  assert.equal(calls, 2);
+  assert.equal(result, 'Review required.');
+});
+
+test('reviewer does not retry unrelated provider or authoritative service failures', async () => {
+  const { reviewer } = await loadAgentModules();
+
+  for (const failure of [
+    Object.assign(new Error('Rate limited'), { status: 429 }),
+    Object.assign(new Error('Human verification required.'), { code: 'RELEASE_BLOCKED', statusCode: 409 }),
+  ]) {
+    let calls = 0;
+    await assert.rejects(
+      () => (reviewer.runReviewerAgent as (input: unknown) => Promise<unknown>)({
+        agent: { name: 'fake-agent' },
+        input: 'Review the packet.',
+        run: async () => {
+          calls += 1;
+          throw failure;
+        },
+      }),
+      failure,
+    );
+    assert.equal(calls, 1);
+  }
+});
