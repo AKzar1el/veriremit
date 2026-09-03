@@ -9,6 +9,7 @@ import {
 } from '../../../packages/integrations/nutrient/src/index.ts';
 import {
   createFoxitMcpServer,
+  FoxitPdfServicesMergeClient,
   FoxitReleasePacketGateway,
 } from '../../../packages/integrations/foxit-mcp/src/index.ts';
 import { FoxitEsignClient } from '../../../packages/integrations/foxit-esign/src/index.ts';
@@ -150,7 +151,14 @@ async function createDefaultLiveProviders(config: AgentConfig): Promise<LiveRunt
     throw error;
   }
 
-  const foxitReleaseGateway = new FoxitReleasePacketGateway(mcp);
+  const foxitReleaseGateway = new FoxitReleasePacketGateway(
+    mcp,
+    new FoxitPdfServicesMergeClient({
+      clientId: credentials.foxitClientId,
+      clientSecret: credentials.foxitClientSecret,
+      ...(config.foxitApiHost ? { baseUrl: config.foxitApiHost } : {}),
+    }),
+  );
   const doctavian = new DoctavianGenerationClient({
     apiKey: credentials.doctavianApiKey,
     accessToken: credentials.doctavianAccessToken,
