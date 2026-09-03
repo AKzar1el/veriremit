@@ -1,6 +1,6 @@
 {
   "id": "case_acme_po_4821",
-  "status": "release_prepared",
+  "status": "signature_pending",
   "documents": [
     {
       "id": "doc_vendor_master_vendor_master_pdf",
@@ -788,14 +788,17 @@
     "reference": "VR-2026-4821",
     "reviewerName": "Demo Finance Controller",
     "result": "confirmed",
-    "recordedAt": "2026-09-03T13:51:18.377Z"
+    "recordedAt": "2026-09-03T16:18:26.539Z"
   },
   "releaseDocument": {
-    "id": "6a998ed1b5e3915c864ab758",
+    "id": "6a999df3b5e3915c864ab77e",
     "filename": "payment-release-authorization.pdf",
     "provider": "foxit"
   },
-  "signature": null,
-  "createdAt": "2026-09-03T13:42:47.932Z",
-  "updatedAt": "2026-09-03T15:14:32.152Z"
+  "signature": {
+    "envelopeId": "2928937",
+    "status": "pending"
+  },
+  "createdAt": "2026-09-03T16:01:18.938Z",
+  "updatedAt": "2026-09-03T16:19:59.882Z"
 }

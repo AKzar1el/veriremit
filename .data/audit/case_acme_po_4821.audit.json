@@ -2,318 +2,329 @@
   {
     "caseId": "case_acme_po_4821",
     "type": "CASE_CREATED",
-    "occurredAt": "2026-09-03T13:42:47.940Z",
+    "occurredAt": "2026-09-03T16:01:18.943Z",
     "data": {
       "mode": "live"
     },
     "previousHash": "0000000000000000000000000000000000000000000000000000000000000000",
-    "hash": "c5c91e5572317b7da1c90de6a24c6d66cb6885950d4676f18931c410eb42d42d"
+    "hash": "32ecdc83752b42b4dfa2a935f79cf65f3ce415b4205a2d681fd9776ba3d3330e"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "EXTRACTION_STARTED",
-    "occurredAt": "2026-09-03T13:46:30.490Z",
+    "occurredAt": "2026-09-03T16:04:40.405Z",
     "data": {
       "documentCount": 5
     },
-    "previousHash": "c5c91e5572317b7da1c90de6a24c6d66cb6885950d4676f18931c410eb42d42d",
-    "hash": "4a9b831bc850a41ef13186f7384634a440e671eac0b6d9504586cb09998f1c1d"
+    "previousHash": "32ecdc83752b42b4dfa2a935f79cf65f3ce415b4205a2d681fd9776ba3d3330e",
+    "hash": "d83061303593e7096ec356cc523204c34354866e6a1498443e79b55b252f16c5"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "DOCUMENT_REGISTERED",
-    "occurredAt": "2026-09-03T13:46:30.494Z",
+    "occurredAt": "2026-09-03T16:04:40.406Z",
     "data": {
       "filename": "vendor-master.pdf",
       "kind": "vendor_master"
     },
-    "previousHash": "4a9b831bc850a41ef13186f7384634a440e671eac0b6d9504586cb09998f1c1d",
-    "hash": "9a40e4fec8591fa260d9500177b1c1fd197d58d9fe5dffa39f2d2f48db6a60a7"
+    "previousHash": "d83061303593e7096ec356cc523204c34354866e6a1498443e79b55b252f16c5",
+    "hash": "169253f9c71c0e4245fe4ba440ab572e7e5358906037a0f736fc549e7103f437"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "EXTRACTION_COMPLETED",
-    "occurredAt": "2026-09-03T13:46:34.457Z",
+    "occurredAt": "2026-09-03T16:04:44.225Z",
     "data": {
       "filename": "vendor-master.pdf",
       "kind": "vendor_master",
       "mode": "live",
       "factCount": 5
     },
-    "previousHash": "9a40e4fec8591fa260d9500177b1c1fd197d58d9fe5dffa39f2d2f48db6a60a7",
-    "hash": "a370c351020aec7fb2f1dd6887edbfe6e6bedf475b30b6ea6bbb3d8249755940"
+    "previousHash": "169253f9c71c0e4245fe4ba440ab572e7e5358906037a0f736fc549e7103f437",
+    "hash": "f70473293356ec9224c01c99ec299726feee92a80dc3148c360df5074384543e"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "DOCUMENT_REGISTERED",
-    "occurredAt": "2026-09-03T13:46:34.460Z",
+    "occurredAt": "2026-09-03T16:04:44.228Z",
     "data": {
       "filename": "purchase-order-4821.pdf",
       "kind": "purchase_order"
     },
-    "previousHash": "a370c351020aec7fb2f1dd6887edbfe6e6bedf475b30b6ea6bbb3d8249755940",
-    "hash": "4bfe62a3f3f5cffeaf333f7c05fe554b51324b8d07b4e84fb366be4514d6c0a0"
+    "previousHash": "f70473293356ec9224c01c99ec299726feee92a80dc3148c360df5074384543e",
+    "hash": "5eb829971d875e6c016e7c094a641dd0b5cba1c4ee19ee3c6449f7e835ece1ec"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "EXTRACTION_COMPLETED",
-    "occurredAt": "2026-09-03T13:46:37.922Z",
+    "occurredAt": "2026-09-03T16:04:47.567Z",
     "data": {
       "filename": "purchase-order-4821.pdf",
       "kind": "purchase_order",
       "mode": "live",
       "factCount": 4
     },
-    "previousHash": "4bfe62a3f3f5cffeaf333f7c05fe554b51324b8d07b4e84fb366be4514d6c0a0",
-    "hash": "9e0d3273dd5d62992f1b2542cc24b68c867315db38b843e03a325c386698dbf8"
+    "previousHash": "5eb829971d875e6c016e7c094a641dd0b5cba1c4ee19ee3c6449f7e835ece1ec",
+    "hash": "93a64881f4aea20d2d935586169c176f33002276d9425bd96179c35ab68db7ef"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "DOCUMENT_REGISTERED",
-    "occurredAt": "2026-09-03T13:46:37.925Z",
+    "occurredAt": "2026-09-03T16:04:47.569Z",
     "data": {
       "filename": "previous-invoice.pdf",
       "kind": "previous_invoice"
     },
-    "previousHash": "9e0d3273dd5d62992f1b2542cc24b68c867315db38b843e03a325c386698dbf8",
-    "hash": "acd7e24b206445ed6a2ab248a7874a071864c4f5710ad01fc719f30223c98ada"
+    "previousHash": "93a64881f4aea20d2d935586169c176f33002276d9425bd96179c35ab68db7ef",
+    "hash": "3f2daf4a8348b9b304cd06b9a3489973ec958b2c7918d3087e2ff757aa4dc2c8"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "EXTRACTION_COMPLETED",
-    "occurredAt": "2026-09-03T13:46:47.796Z",
+    "occurredAt": "2026-09-03T16:04:51.818Z",
     "data": {
       "filename": "previous-invoice.pdf",
       "kind": "previous_invoice",
       "mode": "live",
       "factCount": 4
     },
-    "previousHash": "acd7e24b206445ed6a2ab248a7874a071864c4f5710ad01fc719f30223c98ada",
-    "hash": "68ebe12a2d2434e61d8894d031c6028655ff9a65a173049e68211587094cbf09"
+    "previousHash": "3f2daf4a8348b9b304cd06b9a3489973ec958b2c7918d3087e2ff757aa4dc2c8",
+    "hash": "46d243f40226821a397d2cb00382111a3577e9a87f305164379571e27e5c464a"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "DOCUMENT_REGISTERED",
-    "occurredAt": "2026-09-03T13:46:47.799Z",
+    "occurredAt": "2026-09-03T16:04:51.820Z",
     "data": {
       "filename": "invoice-8842.pdf",
       "kind": "current_invoice"
     },
-    "previousHash": "68ebe12a2d2434e61d8894d031c6028655ff9a65a173049e68211587094cbf09",
-    "hash": "dddda3927efebe05c2218da3938fcc3a2ecc72efbe65e390ae9a2d33c769d236"
+    "previousHash": "46d243f40226821a397d2cb00382111a3577e9a87f305164379571e27e5c464a",
+    "hash": "0687800680dd26b046dfd4a3df7b260b77bba46fccf152397eeae7e7ddf1e0b1"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "EXTRACTION_COMPLETED",
-    "occurredAt": "2026-09-03T13:46:51.871Z",
+    "occurredAt": "2026-09-03T16:04:55.610Z",
     "data": {
       "filename": "invoice-8842.pdf",
       "kind": "current_invoice",
       "mode": "live",
       "factCount": 7
     },
-    "previousHash": "dddda3927efebe05c2218da3938fcc3a2ecc72efbe65e390ae9a2d33c769d236",
-    "hash": "6ff1598d62b780d1416f8f1b1ac4aa7333bcabc0c7e97be118f29f9350341f15"
+    "previousHash": "0687800680dd26b046dfd4a3df7b260b77bba46fccf152397eeae7e7ddf1e0b1",
+    "hash": "d29a21a4a9b16140e24c0cb28a756c39e8ce3eb08a07d65b317c0a3be3218239"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "DOCUMENT_REGISTERED",
-    "occurredAt": "2026-09-03T13:46:51.873Z",
+    "occurredAt": "2026-09-03T16:04:55.613Z",
     "data": {
       "filename": "bank-change-letter.pdf",
       "kind": "bank_change_letter"
     },
-    "previousHash": "6ff1598d62b780d1416f8f1b1ac4aa7333bcabc0c7e97be118f29f9350341f15",
-    "hash": "8d438cf8e0ca342de14e266f2d64e06a416968e09c76f352fe55b4a66b378afe"
+    "previousHash": "d29a21a4a9b16140e24c0cb28a756c39e8ce3eb08a07d65b317c0a3be3218239",
+    "hash": "cf251ba2d84a75ae391840729ba90647d00983bd7b4bc2542cbe3dd9c98b2a82"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "EXTRACTION_COMPLETED",
-    "occurredAt": "2026-09-03T13:46:54.676Z",
+    "occurredAt": "2026-09-03T16:04:58.852Z",
     "data": {
       "filename": "bank-change-letter.pdf",
       "kind": "bank_change_letter",
       "mode": "live",
       "factCount": 2
     },
-    "previousHash": "8d438cf8e0ca342de14e266f2d64e06a416968e09c76f352fe55b4a66b378afe",
-    "hash": "f090672871936f20371814f4171a21381a23acd7572174e69b6a72aed3d889ee"
+    "previousHash": "cf251ba2d84a75ae391840729ba90647d00983bd7b4bc2542cbe3dd9c98b2a82",
+    "hash": "f7a3341f4b524ed5a86040484e30493aea768efc3bf0958a5912591ed5e2e559"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "RULE_EVALUATED",
-    "occurredAt": "2026-09-03T13:46:54.681Z",
+    "occurredAt": "2026-09-03T16:04:58.857Z",
     "data": {
       "code": "vendor_id_match",
       "outcome": "PASS"
     },
-    "previousHash": "f090672871936f20371814f4171a21381a23acd7572174e69b6a72aed3d889ee",
-    "hash": "fcf75382ad78672c9efb532b60bdc0aabb2ab9dafb7a95a1c852d50a6f56e497"
+    "previousHash": "f7a3341f4b524ed5a86040484e30493aea768efc3bf0958a5912591ed5e2e559",
+    "hash": "1959da3189e7faa4c164b1fadabc25a81760c77ac2f7b4b0b13d85a56c5696d9"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "RULE_EVALUATED",
-    "occurredAt": "2026-09-03T13:46:54.684Z",
+    "occurredAt": "2026-09-03T16:04:58.859Z",
     "data": {
       "code": "vat_id_match",
       "outcome": "PASS"
     },
-    "previousHash": "fcf75382ad78672c9efb532b60bdc0aabb2ab9dafb7a95a1c852d50a6f56e497",
-    "hash": "180444c3ba59501d64a7394752ebeae1c35369abb7c4d9068e66c8f91d01d3e2"
+    "previousHash": "1959da3189e7faa4c164b1fadabc25a81760c77ac2f7b4b0b13d85a56c5696d9",
+    "hash": "c4ec438126457de49b7ba00581e01358578f0c0dfa1c22ed5d7f8725f35ad91d"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "RULE_EVALUATED",
-    "occurredAt": "2026-09-03T13:46:54.688Z",
+    "occurredAt": "2026-09-03T16:04:58.861Z",
     "data": {
       "code": "po_number_match",
       "outcome": "PASS"
     },
-    "previousHash": "180444c3ba59501d64a7394752ebeae1c35369abb7c4d9068e66c8f91d01d3e2",
-    "hash": "9dfd13af900eead516c6bbbe0d45880fb7174a0b13b640be87f1907ecc1dfb0f"
+    "previousHash": "c4ec438126457de49b7ba00581e01358578f0c0dfa1c22ed5d7f8725f35ad91d",
+    "hash": "07262fe57584acdd0bcb4288cbc7d4f3cb09e8038669b0dec8835af295fc238a"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "RULE_EVALUATED",
-    "occurredAt": "2026-09-03T13:46:54.691Z",
+    "occurredAt": "2026-09-03T16:04:58.863Z",
     "data": {
       "code": "currency_match",
       "outcome": "PASS"
     },
-    "previousHash": "9dfd13af900eead516c6bbbe0d45880fb7174a0b13b640be87f1907ecc1dfb0f",
-    "hash": "6cd575dbae16d6d67cea302256090f95a0989535a7e28aee2b4073469e29bd40"
+    "previousHash": "07262fe57584acdd0bcb4288cbc7d4f3cb09e8038669b0dec8835af295fc238a",
+    "hash": "a78cef17a1ddc27ce590905886dca1ac1f64a13b46fcdc5df69551d91bfae388"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "RULE_EVALUATED",
-    "occurredAt": "2026-09-03T13:46:54.693Z",
+    "occurredAt": "2026-09-03T16:04:58.864Z",
     "data": {
       "code": "invoice_amount_matches_po",
       "outcome": "PASS"
     },
-    "previousHash": "6cd575dbae16d6d67cea302256090f95a0989535a7e28aee2b4073469e29bd40",
-    "hash": "30926c2e0af82cb101357e09357546b484e623dbd096d31e3feb7cd0e3012c47"
+    "previousHash": "a78cef17a1ddc27ce590905886dca1ac1f64a13b46fcdc5df69551d91bfae388",
+    "hash": "f2c71a3ffe56d34d42ed41971631565e1f15ed02c0fde654cffd37dd976e7fd3"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "RULE_EVALUATED",
-    "occurredAt": "2026-09-03T13:46:54.696Z",
+    "occurredAt": "2026-09-03T16:04:58.866Z",
     "data": {
       "code": "beneficiary_name_match",
       "outcome": "PASS"
     },
-    "previousHash": "30926c2e0af82cb101357e09357546b484e623dbd096d31e3feb7cd0e3012c47",
-    "hash": "035a4eeda487dcc03b2feb15e4c16613f5b16cf62705f31735b603a8510bcfa9"
+    "previousHash": "f2c71a3ffe56d34d42ed41971631565e1f15ed02c0fde654cffd37dd976e7fd3",
+    "hash": "57580175335e75648a6bb56bd4d268ae323e98bff2662dcd1d0402b6195c30d1"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "RULE_EVALUATED",
-    "occurredAt": "2026-09-03T13:46:54.699Z",
+    "occurredAt": "2026-09-03T16:04:58.867Z",
     "data": {
       "code": "bank_change_vendor_match",
       "outcome": "PASS"
     },
-    "previousHash": "035a4eeda487dcc03b2feb15e4c16613f5b16cf62705f31735b603a8510bcfa9",
-    "hash": "f9b17b07afa7fad64d1f88855d06cfc47b3098d971204379fc877b0e3e41765f"
+    "previousHash": "57580175335e75648a6bb56bd4d268ae323e98bff2662dcd1d0402b6195c30d1",
+    "hash": "2bcbae3a5ec72fa9dc662eec4a7268bc5e44174362a69e57969ee86146ac77e1"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "RULE_EVALUATED",
-    "occurredAt": "2026-09-03T13:46:54.702Z",
+    "occurredAt": "2026-09-03T16:04:58.869Z",
     "data": {
       "code": "bank_change_request_match",
       "outcome": "PASS"
     },
-    "previousHash": "f9b17b07afa7fad64d1f88855d06cfc47b3098d971204379fc877b0e3e41765f",
-    "hash": "515843deba12d6edb2c7f97883c3d580ec93c3aaa98bdb861b4809aa44706653"
+    "previousHash": "2bcbae3a5ec72fa9dc662eec4a7268bc5e44174362a69e57969ee86146ac77e1",
+    "hash": "f92e940d8956ce3d658d59ea78c81bf81ee950770ad495c574a323d9395742ff"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "RULE_EVALUATED",
-    "occurredAt": "2026-09-03T13:46:54.704Z",
+    "occurredAt": "2026-09-03T16:04:58.870Z",
     "data": {
       "code": "bank_account_continuity",
       "outcome": "BLOCK"
     },
-    "previousHash": "515843deba12d6edb2c7f97883c3d580ec93c3aaa98bdb861b4809aa44706653",
-    "hash": "a17898508c153a51669d713d55e1f54789c4e3724a0a13d976551dd77e903d03"
+    "previousHash": "f92e940d8956ce3d658d59ea78c81bf81ee950770ad495c574a323d9395742ff",
+    "hash": "6648fb23e9c0b72c4011b63c691c40eaef13321177e445bb87915891c481abe0"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "EXCEPTION_RAISED",
-    "occurredAt": "2026-09-03T13:46:54.707Z",
+    "occurredAt": "2026-09-03T16:04:58.872Z",
     "data": {
       "code": "bank_account_continuity",
       "outcome": "BLOCK"
     },
-    "previousHash": "a17898508c153a51669d713d55e1f54789c4e3724a0a13d976551dd77e903d03",
-    "hash": "dd8f79ba3ee57fce01ed7a868f14d39e87b01ffcc7a4e9122cf01cd370d6e5b4"
+    "previousHash": "6648fb23e9c0b72c4011b63c691c40eaef13321177e445bb87915891c481abe0",
+    "hash": "3b5e3b32956faba79158f72a69ea2d7c88fc1be20a0493e295d403729a938027"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "RULE_EVALUATED",
-    "occurredAt": "2026-09-03T13:46:54.711Z",
+    "occurredAt": "2026-09-03T16:04:58.874Z",
     "data": {
       "code": "critical_confidence_threshold",
       "outcome": "PASS"
     },
-    "previousHash": "dd8f79ba3ee57fce01ed7a868f14d39e87b01ffcc7a4e9122cf01cd370d6e5b4",
-    "hash": "7623cb70ae25a95a0f20e3524913c515ba61433fb9087d4e4fd653fd5fa8050a"
+    "previousHash": "3b5e3b32956faba79158f72a69ea2d7c88fc1be20a0493e295d403729a938027",
+    "hash": "423fc0fb311b2853d1b97e5bf220c153bd738ee1d4e6d527479f102a7df514e4"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "HUMAN_VERIFICATION_RECORDED",
-    "occurredAt": "2026-09-03T13:51:18.381Z",
+    "occurredAt": "2026-09-03T16:18:26.542Z",
     "data": {
       "method": "trusted_callback",
       "reference": "VR-2026-4821",
       "result": "confirmed",
       "reviewerName": "Demo Finance Controller"
     },
-    "previousHash": "7623cb70ae25a95a0f20e3524913c515ba61433fb9087d4e4fd653fd5fa8050a",
-    "hash": "5922b0140ad41661a26c31827abf7790403a0b0e419a9a90d87c42d1b1a7b6a8"
+    "previousHash": "423fc0fb311b2853d1b97e5bf220c153bd738ee1d4e6d527479f102a7df514e4",
+    "hash": "f86b575c5b981aa9dd6eddeda7b0b25368a7b127186f9279b69ab998284d9430"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "APPROVAL_GRANTED",
-    "occurredAt": "2026-09-03T13:51:18.383Z",
+    "occurredAt": "2026-09-03T16:18:26.545Z",
     "data": {
       "reference": "VR-2026-4821"
     },
-    "previousHash": "5922b0140ad41661a26c31827abf7790403a0b0e419a9a90d87c42d1b1a7b6a8",
-    "hash": "a9d791909da8a7eaf9639b1b0685436166b4d824c7e05e5d2b400c40d7855bde"
+    "previousHash": "f86b575c5b981aa9dd6eddeda7b0b25368a7b127186f9279b69ab998284d9430",
+    "hash": "445f612043405d2202c167637cb89f8c28fd7c85772c30e1d29ffb07d2abfd96"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "DOCTAVIAN_DOCUMENT_GENERATED",
-    "occurredAt": "2026-09-03T15:14:32.156Z",
+    "occurredAt": "2026-09-03T16:19:01.954Z",
     "data": {
-      "documentId": "c7008c4c-0c62-4362-806b-b5136ec327d7",
+      "documentId": "56cd69e5-04fd-4875-aa9d-f6c08151de44",
       "filename": "doctavian-payment-release-authorization.pdf"
     },
-    "previousHash": "a9d791909da8a7eaf9639b1b0685436166b4d824c7e05e5d2b400c40d7855bde",
-    "hash": "6370dabe7f2564c20faf4f9d8db0d5889d418c7de3098253d52912177391f9f3"
+    "previousHash": "445f612043405d2202c167637cb89f8c28fd7c85772c30e1d29ffb07d2abfd96",
+    "hash": "a71adf378c7123feb3b2d1b7145877a5f13d3e5a8c855f63ce76ff15ec90e8db"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "FOXIT_MCP_OPERATION_COMPLETED",
-    "occurredAt": "2026-09-03T15:14:32.159Z",
+    "occurredAt": "2026-09-03T16:19:01.956Z",
     "data": {
-      "documentId": "6a998ed1b5e3915c864ab758",
+      "documentId": "6a999df3b5e3915c864ab77e",
       "filename": "payment-release-authorization.pdf"
     },
-    "previousHash": "6370dabe7f2564c20faf4f9d8db0d5889d418c7de3098253d52912177391f9f3",
-    "hash": "13018b04e98e105d6ba708a3c40cff99f00d368287203c36a84b1130528f010a"
+    "previousHash": "a71adf378c7123feb3b2d1b7145877a5f13d3e5a8c855f63ce76ff15ec90e8db",
+    "hash": "6b5f177fdf888d576a601ddd5735757902093e6ff7b5083cdc575b892c22ba82"
   },
   {
     "caseId": "case_acme_po_4821",
     "type": "RELEASE_PREPARED",
-    "occurredAt": "2026-09-03T15:14:32.162Z",
+    "occurredAt": "2026-09-03T16:19:01.958Z",
     "data": {
-      "documentId": "6a998ed1b5e3915c864ab758",
+      "documentId": "6a999df3b5e3915c864ab77e",
       "filename": "payment-release-authorization.pdf"
     },
-    "previousHash": "13018b04e98e105d6ba708a3c40cff99f00d368287203c36a84b1130528f010a",
-    "hash": "fe0d22a87d3999a050066d1fe6c7385dbdd212e06fee31dc6ef72b3add8b8c76"
+    "previousHash": "6b5f177fdf888d576a601ddd5735757902093e6ff7b5083cdc575b892c22ba82",
+    "hash": "7793685f7821092b8721b2ceec97a74e0fe0723410ef30397d2726476c4a8992"
+  },
+  {
+    "caseId": "case_acme_po_4821",
+    "type": "ESIGN_ENVELOPE_CREATED",
+    "occurredAt": "2026-09-03T16:19:59.884Z",
+    "data": {
+      "envelopeId": "2928937",
+      "status": "pending"
+    },
+    "previousHash": "7793685f7821092b8721b2ceec97a74e0fe0723410ef30397d2726476c4a8992",
+    "hash": "7987da4f2a8832b4ed966556d7608ba4e60f5450aec3a31a12878ef761aad46f"
   }
 ]
