@@ -2,8 +2,8 @@ import type { CaseStatus } from '@veriremit/domain';
 
 const INITIAL_REVIEW_PROMPT = [
   'Review the ACME Components packet for PO-4821.',
-  'If the payment details are safe, prepare the €48,620 payment-release authorization and send it to me for signature.',
-  'Never release a changed bank account without human verification.',
+  'Run the document review and explain whether the €48,620 release is safe to continue.',
+  'Never release a changed bank account without independent human verification.',
 ].join(' ');
 
 export function suggestAgentPrompt(status: CaseStatus): string {
