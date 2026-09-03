@@ -1,6 +1,6 @@
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { basename, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 
 export interface FoxitMcpToolClient {
   callToolResult(
@@ -201,6 +201,7 @@ export class FoxitReleasePacketGateway implements ReleasePacketGateway {
         .map((documentId) => ({ documentId }));
       const mergedDocumentId = await this.mergeDocuments(documentInfos);
 
+      await mkdir(dirname(input.outputPath), { recursive: true });
       await this.invoke('download_document', {
         documentId: mergedDocumentId,
         outputPath: input.outputPath,

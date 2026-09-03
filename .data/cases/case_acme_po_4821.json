@@ -1,0 +1,801 @@
+{
+  "id": "case_acme_po_4821",
+  "status": "release_prepared",
+  "documents": [
+    {
+      "id": "doc_vendor_master_vendor_master_pdf",
+      "kind": "vendor_master",
+      "filename": "vendor-master.pdf",
+      "providerDocumentId": "doc_vendor_master_vendor_master_pdf",
+      "facts": [
+        {
+          "field": "vendor_id",
+          "value": "V-1042",
+          "normalizedValue": "V-1042",
+          "confidence": 0.95,
+          "source": {
+            "documentId": "doc_vendor_master_vendor_master_pdf",
+            "filename": "vendor-master.pdf",
+            "page": 1,
+            "boundingBox": [
+              563,
+              544,
+              97,
+              25
+            ]
+          }
+        },
+        {
+          "field": "vat_id",
+          "value": "DE123456789",
+          "normalizedValue": "DE123456789",
+          "confidence": 0.95,
+          "source": {
+            "documentId": "doc_vendor_master_vendor_master_pdf",
+            "filename": "vendor-master.pdf",
+            "page": 1,
+            "boundingBox": [
+              566,
+              705,
+              191,
+              25
+            ]
+          }
+        },
+        {
+          "field": "beneficiary_name",
+          "value": "ACME Components GmbH",
+          "normalizedValue": "ACME Components GmbH",
+          "confidence": 0.95,
+          "source": {
+            "documentId": "doc_vendor_master_vendor_master_pdf",
+            "filename": "vendor-master.pdf",
+            "page": 1,
+            "boundingBox": [
+              563,
+              864,
+              364,
+              32
+            ]
+          }
+        },
+        {
+          "field": "iban",
+          "value": "DE89 3704 0044 0532",
+          "normalizedValue": "DE89 3704 0044 0532",
+          "confidence": 0.95,
+          "source": {
+            "documentId": "doc_vendor_master_vendor_master_pdf",
+            "filename": "vendor-master.pdf",
+            "page": 1,
+            "boundingBox": [
+              566,
+              1022,
+              358,
+              30
+            ]
+          }
+        },
+        {
+          "field": "trusted_phone",
+          "value": "+49 30 555 0104",
+          "normalizedValue": "+49 30 555 0104",
+          "confidence": 0.95,
+          "source": {
+            "documentId": "doc_vendor_master_vendor_master_pdf",
+            "filename": "vendor-master.pdf",
+            "page": 1,
+            "boundingBox": [
+              563,
+              1183,
+              272,
+              30
+            ]
+          }
+        }
+      ],
+      "mode": "live"
+    },
+    {
+      "id": "doc_purchase_order_purchase_order_4821_pdf",
+      "kind": "purchase_order",
+      "filename": "purchase-order-4821.pdf",
+      "providerDocumentId": "doc_purchase_order_purchase_order_4821_pdf",
+      "facts": [
+        {
+          "field": "po_number",
+          "value": "PO-4821",
+          "normalizedValue": "PO-4821",
+          "confidence": 0.95,
+          "source": {
+            "documentId": "doc_purchase_order_purchase_order_4821_pdf",
+            "filename": "purchase-order-4821.pdf",
+            "page": 1,
+            "boundingBox": [
+              122,
+              300,
+              258,
+              55
+            ]
+          }
+        },
+        {
+          "field": "vendor_id",
+          "value": "V-1042",
+          "normalizedValue": "V-1042",
+          "confidence": 0.95,
+          "source": {
+            "documentId": "doc_purchase_order_purchase_order_4821_pdf",
+            "filename": "purchase-order-4821.pdf",
+            "page": 1,
+            "boundingBox": [
+              563,
+              705,
+              97,
+              25
+            ]
+          }
+        },
+        {
+          "field": "currency",
+          "value": "EUR",
+          "normalizedValue": "EUR",
+          "confidence": 0.95,
+          "source": {
+            "documentId": "doc_purchase_order_purchase_order_4821_pdf",
+            "filename": "purchase-order-4821.pdf",
+            "page": 1,
+            "boundingBox": [
+              711,
+              866,
+              58,
+              25
+            ]
+          }
+        },
+        {
+          "field": "amount",
+          "value": 48620,
+          "normalizedValue": "48620",
+          "confidence": 0.9696927825876808,
+          "source": {
+            "documentId": "doc_purchase_order_purchase_order_4821_pdf",
+            "filename": "purchase-order-4821.pdf",
+            "page": 1,
+            "boundingBox": [
+              563,
+              866,
+              136,
+              27
+            ]
+          }
+        }
+      ],
+      "mode": "live"
+    },
+    {
+      "id": "doc_previous_invoice_previous_invoice_pdf",
+      "kind": "previous_invoice",
+      "filename": "previous-invoice.pdf",
+      "providerDocumentId": "doc_previous_invoice_previous_invoice_pdf",
+      "facts": [
+        {
+          "field": "vendor_id",
+          "value": "V-1042",
+          "normalizedValue": "V-1042",
+          "confidence": 0.95,
+          "source": {
+            "documentId": "doc_previous_invoice_previous_invoice_pdf",
+            "filename": "previous-invoice.pdf",
+            "page": 1,
+            "boundingBox": [
+              563,
+              544,
+              97,
+              25
+            ]
+          }
+        },
+        {
+          "field": "vat_id",
+          "value": "DE123456789",
+          "normalizedValue": "DE123456789",
+          "confidence": 0.95,
+          "source": {
+            "documentId": "doc_previous_invoice_previous_invoice_pdf",
+            "filename": "previous-invoice.pdf",
+            "page": 1,
+            "boundingBox": [
+              566,
+              705,
+              191,
+              25
+            ]
+          }
+        },
+        {
+          "field": "beneficiary_name",
+          "value": "ACME Components GmbH",
+          "normalizedValue": "ACME Components GmbH",
+          "confidence": 0.95,
+          "source": {
+            "documentId": "doc_previous_invoice_previous_invoice_pdf",
+            "filename": "previous-invoice.pdf",
+            "page": 1,
+            "boundingBox": [
+              563,
+              864,
+              364,
+              32
+            ]
+          }
+        },
+        {
+          "field": "iban",
+          "value": "DE89 3704 0044 0532",
+          "normalizedValue": "DE89 3704 0044 0532",
+          "confidence": 0.95,
+          "source": {
+            "documentId": "doc_previous_invoice_previous_invoice_pdf",
+            "filename": "previous-invoice.pdf",
+            "page": 1,
+            "boundingBox": [
+              566,
+              1022,
+              358,
+              30
+            ]
+          }
+        }
+      ],
+      "mode": "live"
+    },
+    {
+      "id": "doc_current_invoice_invoice_8842_pdf",
+      "kind": "current_invoice",
+      "filename": "invoice-8842.pdf",
+      "providerDocumentId": "doc_current_invoice_invoice_8842_pdf",
+      "facts": [
+        {
+          "field": "vendor_id",
+          "value": "V-1042",
+          "normalizedValue": "V-1042",
+          "confidence": 0.95,
+          "source": {
+            "documentId": "doc_current_invoice_invoice_8842_pdf",
+            "filename": "invoice-8842.pdf",
+            "page": 1,
+            "boundingBox": [
+              563,
+              544,
+              97,
+              25
+            ]
+          }
+        },
+        {
+          "field": "vat_id",
+          "value": "DE123456789",
+          "normalizedValue": "DE123456789",
+          "confidence": 0.95,
+          "source": {
+            "documentId": "doc_current_invoice_invoice_8842_pdf",
+            "filename": "invoice-8842.pdf",
+            "page": 1,
+            "boundingBox": [
+              566,
+              705,
+              191,
+              25
+            ]
+          }
+        },
+        {
+          "field": "po_number",
+          "value": "PO-4821",
+          "normalizedValue": "PO-4821",
+          "confidence": 0.95,
+          "source": {
+            "documentId": "doc_current_invoice_invoice_8842_pdf",
+            "filename": "invoice-8842.pdf",
+            "page": 1,
+            "boundingBox": [
+              566,
+              866,
+              113,
+              25
+            ]
+          }
+        },
+        {
+          "field": "currency",
+          "value": "EUR",
+          "normalizedValue": "EUR",
+          "confidence": 0.95,
+          "source": {
+            "documentId": "doc_current_invoice_invoice_8842_pdf",
+            "filename": "invoice-8842.pdf",
+            "page": 1,
+            "boundingBox": [
+              711,
+              1027,
+              58,
+              25
+            ]
+          }
+        },
+        {
+          "field": "amount",
+          "value": 48620,
+          "normalizedValue": "48620",
+          "confidence": 0.9696927825876808,
+          "source": {
+            "documentId": "doc_current_invoice_invoice_8842_pdf",
+            "filename": "invoice-8842.pdf",
+            "page": 1,
+            "boundingBox": [
+              563,
+              1027,
+              136,
+              27
+            ]
+          }
+        },
+        {
+          "field": "beneficiary_name",
+          "value": "ACME Components GmbH",
+          "normalizedValue": "ACME Components GmbH",
+          "confidence": 0.95,
+          "source": {
+            "documentId": "doc_current_invoice_invoice_8842_pdf",
+            "filename": "invoice-8842.pdf",
+            "page": 1,
+            "boundingBox": [
+              563,
+              1186,
+              364,
+              33
+            ]
+          }
+        },
+        {
+          "field": "iban",
+          "value": "DE72 5001 0517 5407",
+          "normalizedValue": "DE72 5001 0517 5407",
+          "confidence": 0.95,
+          "source": {
+            "documentId": "doc_current_invoice_invoice_8842_pdf",
+            "filename": "invoice-8842.pdf",
+            "page": 1,
+            "boundingBox": [
+              566,
+              1344,
+              358,
+              30
+            ]
+          }
+        }
+      ],
+      "mode": "live"
+    },
+    {
+      "id": "doc_bank_change_letter_bank_change_letter_pdf",
+      "kind": "bank_change_letter",
+      "filename": "bank-change-letter.pdf",
+      "providerDocumentId": "doc_bank_change_letter_bank_change_letter_pdf",
+      "facts": [
+        {
+          "field": "vendor_id",
+          "value": "V-1042",
+          "normalizedValue": "V-1042",
+          "confidence": 0.95,
+          "source": {
+            "documentId": "doc_bank_change_letter_bank_change_letter_pdf",
+            "filename": "bank-change-letter.pdf",
+            "page": 1,
+            "boundingBox": [
+              563,
+              544,
+              97,
+              25
+            ]
+          }
+        },
+        {
+          "field": "iban",
+          "value": "DE72 5001 0517 5407",
+          "normalizedValue": "DE72 5001 0517 5407",
+          "confidence": 0.95,
+          "source": {
+            "documentId": "doc_bank_change_letter_bank_change_letter_pdf",
+            "filename": "bank-change-letter.pdf",
+            "page": 1,
+            "boundingBox": [
+              566,
+              700,
+              358,
+              30
+            ]
+          }
+        }
+      ],
+      "mode": "live"
+    }
+  ],
+  "rules": [
+    {
+      "code": "vendor_id_match",
+      "outcome": "PASS",
+      "message": "Vendor identifiers match.",
+      "evidence": [
+        {
+          "label": "vendor master",
+          "value": "V-1042",
+          "source": {
+            "documentId": "doc_vendor_master_vendor_master_pdf",
+            "filename": "vendor-master.pdf",
+            "page": 1,
+            "boundingBox": [
+              563,
+              544,
+              97,
+              25
+            ]
+          }
+        },
+        {
+          "label": "current invoice",
+          "value": "V-1042",
+          "source": {
+            "documentId": "doc_current_invoice_invoice_8842_pdf",
+            "filename": "invoice-8842.pdf",
+            "page": 1,
+            "boundingBox": [
+              563,
+              544,
+              97,
+              25
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "code": "vat_id_match",
+      "outcome": "PASS",
+      "message": "VAT identifiers match.",
+      "evidence": [
+        {
+          "label": "vendor master",
+          "value": "DE123456789",
+          "source": {
+            "documentId": "doc_vendor_master_vendor_master_pdf",
+            "filename": "vendor-master.pdf",
+            "page": 1,
+            "boundingBox": [
+              566,
+              705,
+              191,
+              25
+            ]
+          }
+        },
+        {
+          "label": "current invoice",
+          "value": "DE123456789",
+          "source": {
+            "documentId": "doc_current_invoice_invoice_8842_pdf",
+            "filename": "invoice-8842.pdf",
+            "page": 1,
+            "boundingBox": [
+              566,
+              705,
+              191,
+              25
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "code": "po_number_match",
+      "outcome": "PASS",
+      "message": "Purchase-order identifiers match.",
+      "evidence": [
+        {
+          "label": "purchase order",
+          "value": "PO-4821",
+          "source": {
+            "documentId": "doc_purchase_order_purchase_order_4821_pdf",
+            "filename": "purchase-order-4821.pdf",
+            "page": 1,
+            "boundingBox": [
+              122,
+              300,
+              258,
+              55
+            ]
+          }
+        },
+        {
+          "label": "current invoice",
+          "value": "PO-4821",
+          "source": {
+            "documentId": "doc_current_invoice_invoice_8842_pdf",
+            "filename": "invoice-8842.pdf",
+            "page": 1,
+            "boundingBox": [
+              566,
+              866,
+              113,
+              25
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "code": "currency_match",
+      "outcome": "PASS",
+      "message": "Currencies match.",
+      "evidence": [
+        {
+          "label": "purchase order",
+          "value": "EUR",
+          "source": {
+            "documentId": "doc_purchase_order_purchase_order_4821_pdf",
+            "filename": "purchase-order-4821.pdf",
+            "page": 1,
+            "boundingBox": [
+              711,
+              866,
+              58,
+              25
+            ]
+          }
+        },
+        {
+          "label": "current invoice",
+          "value": "EUR",
+          "source": {
+            "documentId": "doc_current_invoice_invoice_8842_pdf",
+            "filename": "invoice-8842.pdf",
+            "page": 1,
+            "boundingBox": [
+              711,
+              1027,
+              58,
+              25
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "code": "invoice_amount_matches_po",
+      "outcome": "PASS",
+      "message": "Invoice amount matches the approved purchase order.",
+      "evidence": [
+        {
+          "label": "purchase order",
+          "value": "48620.00",
+          "source": {
+            "documentId": "doc_purchase_order_purchase_order_4821_pdf",
+            "filename": "purchase-order-4821.pdf",
+            "page": 1,
+            "boundingBox": [
+              563,
+              866,
+              136,
+              27
+            ]
+          }
+        },
+        {
+          "label": "current invoice",
+          "value": "48620.00",
+          "source": {
+            "documentId": "doc_current_invoice_invoice_8842_pdf",
+            "filename": "invoice-8842.pdf",
+            "page": 1,
+            "boundingBox": [
+              563,
+              1027,
+              136,
+              27
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "code": "beneficiary_name_match",
+      "outcome": "PASS",
+      "message": "Beneficiary names match.",
+      "evidence": [
+        {
+          "label": "vendor master",
+          "value": "ACME COMPONENTS GMBH",
+          "source": {
+            "documentId": "doc_vendor_master_vendor_master_pdf",
+            "filename": "vendor-master.pdf",
+            "page": 1,
+            "boundingBox": [
+              563,
+              864,
+              364,
+              32
+            ]
+          }
+        },
+        {
+          "label": "current invoice",
+          "value": "ACME COMPONENTS GMBH",
+          "source": {
+            "documentId": "doc_current_invoice_invoice_8842_pdf",
+            "filename": "invoice-8842.pdf",
+            "page": 1,
+            "boundingBox": [
+              563,
+              1186,
+              364,
+              33
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "code": "bank_change_vendor_match",
+      "outcome": "PASS",
+      "message": "Bank-change request vendor matches the verified vendor record.",
+      "evidence": [
+        {
+          "label": "vendor master",
+          "value": "V-1042",
+          "source": {
+            "documentId": "doc_vendor_master_vendor_master_pdf",
+            "filename": "vendor-master.pdf",
+            "page": 1,
+            "boundingBox": [
+              563,
+              544,
+              97,
+              25
+            ]
+          }
+        },
+        {
+          "label": "bank-change request",
+          "value": "V-1042",
+          "source": {
+            "documentId": "doc_bank_change_letter_bank_change_letter_pdf",
+            "filename": "bank-change-letter.pdf",
+            "page": 1,
+            "boundingBox": [
+              563,
+              544,
+              97,
+              25
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "code": "bank_change_request_match",
+      "outcome": "PASS",
+      "message": "Current invoice bank account matches the submitted bank-change request.",
+      "evidence": [
+        {
+          "label": "bank-change request",
+          "value": "DE72500105175407",
+          "source": {
+            "documentId": "doc_bank_change_letter_bank_change_letter_pdf",
+            "filename": "bank-change-letter.pdf",
+            "page": 1,
+            "boundingBox": [
+              566,
+              700,
+              358,
+              30
+            ]
+          }
+        },
+        {
+          "label": "current invoice",
+          "value": "DE72500105175407",
+          "source": {
+            "documentId": "doc_current_invoice_invoice_8842_pdf",
+            "filename": "invoice-8842.pdf",
+            "page": 1,
+            "boundingBox": [
+              566,
+              1344,
+              358,
+              30
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "code": "bank_account_continuity",
+      "outcome": "BLOCK",
+      "message": "Current invoice bank account differs from verified historical bank details.",
+      "evidence": [
+        {
+          "label": "verified vendor master",
+          "value": "DE89370400440532",
+          "source": {
+            "documentId": "doc_vendor_master_vendor_master_pdf",
+            "filename": "vendor-master.pdf",
+            "page": 1,
+            "boundingBox": [
+              566,
+              1022,
+              358,
+              30
+            ]
+          }
+        },
+        {
+          "label": "previous verified invoice",
+          "value": "DE89370400440532",
+          "source": {
+            "documentId": "doc_previous_invoice_previous_invoice_pdf",
+            "filename": "previous-invoice.pdf",
+            "page": 1,
+            "boundingBox": [
+              566,
+              1022,
+              358,
+              30
+            ]
+          }
+        },
+        {
+          "label": "current invoice",
+          "value": "DE72500105175407",
+          "source": {
+            "documentId": "doc_current_invoice_invoice_8842_pdf",
+            "filename": "invoice-8842.pdf",
+            "page": 1,
+            "boundingBox": [
+              566,
+              1344,
+              358,
+              30
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "code": "critical_confidence_threshold",
+      "outcome": "PASS",
+      "message": "All critical extracted fields meet the 0.90 confidence threshold.",
+      "evidence": []
+    }
+  ],
+  "humanVerification": {
+    "method": "trusted_callback",
+    "trustedContactSource": {
+      "documentId": "doc_vendor_master_vendor_master_pdf",
+      "filename": "vendor-master.pdf",
+      "page": 1
+    },
+    "reference": "VR-2026-4821",
+    "reviewerName": "Demo Finance Controller",
+    "result": "confirmed",
+    "recordedAt": "2026-09-03T13:51:18.377Z"
+  },
+  "releaseDocument": {
+    "id": "6a998ed1b5e3915c864ab758",
+    "filename": "payment-release-authorization.pdf",
+    "provider": "foxit"
+  },
+  "signature": null,
+  "createdAt": "2026-09-03T13:42:47.932Z",
+  "updatedAt": "2026-09-03T15:14:32.152Z"
+}

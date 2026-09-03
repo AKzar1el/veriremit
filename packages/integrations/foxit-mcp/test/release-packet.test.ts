@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
-import { basename, isAbsolute } from 'node:path';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { basename, isAbsolute, join } from 'node:path';
 import test from 'node:test';
 
 async function loadReleasePacket() {
@@ -87,6 +88,47 @@ test('prepares and downloads a release packet through the four reversible Foxit 
     localPath: '/tmp/release.pdf',
   });
   assert.equal(fallbackCalls, 0);
+});
+
+test('creates a missing output parent before Foxit downloads the release packet', async () => {
+  const module = await loadReleasePacket();
+  assert.equal(typeof module.FoxitReleasePacketGateway, 'function');
+
+  const root = await mkdtemp(join(tmpdir(), 'veriremit-release-output-'));
+  const outputPath = join(root, 'missing', 'release.pdf');
+  const outputBytes = new Uint8Array([37, 80, 68, 70, 45, 49, 46, 55]);
+  let uploadCount = 0;
+  const gateway = new (module.FoxitReleasePacketGateway as new (client: unknown) => {
+    prepare(input: unknown): Promise<unknown>;
+  })({
+    async callToolResult(name: string, args: Record<string, unknown>) {
+      if (name === 'upload_document') {
+        uploadCount += 1;
+        return textResult({ success: true, documentId: `uploaded-${uploadCount}` });
+      }
+      if (name === 'pdf_merge') {
+        return textResult({ success: true, resultDocumentId: 'merged-pdf' });
+      }
+      if (name === 'download_document') {
+        await writeFile(args.outputPath as string, outputBytes);
+        return textResult({ success: true, documentId: 'merged-pdf', outputPath: args.outputPath });
+      }
+      throw new Error(`Unexpected MCP tool: ${name}`);
+    },
+  });
+
+  try {
+    const result = await gateway.prepare({
+      releaseDocument: { filename: 'release.pdf', bytes: new Uint8Array([37, 80, 68, 70]) },
+      evidenceDocuments: [{ filename: 'evidence.pdf', bytes: new Uint8Array([37, 80, 68, 70]) }],
+      outputPath,
+    }) as { localPath: string };
+
+    assert.equal(result.localPath, outputPath);
+    assert.deepEqual(new Uint8Array(await readFile(outputPath)), outputBytes);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test('uses the merge compatibility path only after the MCP pdf_merge validation error', async () => {
